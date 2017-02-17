@@ -11,7 +11,7 @@
 % the Dr. Rellermeyer or the TA.
 
 % parse: note you will have to change this to have it work for general
-% programs; at the moment, it will only parse expressions and return to
+% expressionrams; at the moment, it will only parse expressions and return to
 % you an expression node in the AST variable
 parse(TokenList, AST) :- phrase(expression(AST), TokenList, []).
 
@@ -66,22 +66,22 @@ mulOp(mulOp('/')) --> ['/'].
 
 % You need to finish adding the rest of the parsing rules.
 % After that, you need to define evaluation rules that will take an AST and
-% "run" your program.
+% "run" your expressionram.
 
-prog(prog(R)) --> retStatement(R),
+expression(expression(R)) --> retStatement(R),
     [.].
 
-prog(prog(ID,P)) --> declaration(ID),
+expression(expression(ID,P)) --> declaration(ID),
     [;],
-     prog(P).
+     expression(P).
 
-prog(prog(ID,B,P)) --> assignment(ID,B),
+expression(expression(ID,B,P)) --> assignment(ID,B),
     [;],
-    prog(P).
+    expression(P).
 
-prog(prog(ID,B,P)) --> declAssignment(ID,B),
+expression(expression(ID,B,P)) --> declAssignment(ID,B),
     [;],
-    prog(P).
+    expression(P).
 
 retStatement(ret(B)) --> [return],
     base(B).
@@ -97,6 +97,7 @@ declAssignment(declA(ID,B)) --> [var],
     ID,
     [<--],
     base(B).
+
 
 
 
