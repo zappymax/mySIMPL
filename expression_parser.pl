@@ -13,7 +13,7 @@
 % parse: note you will have to change this to have it work for general
 % expressionrams; at the moment, it will only parse expressions and return to
 % you an expression node in the AST variable
-parse(TokenList, AST) :- phrase(expression(AST), TokenList, []).
+parse(TokenList, AST) :- phrase(prog(AST), TokenList, []).
 
 
 
@@ -68,35 +68,43 @@ mulOp(mulOp('/')) --> ['/'].
 % After that, you need to define evaluation rules that will take an AST and
 % "run" your expressionram.
 
-expression(expression(R)) --> retStatement(R),
-    [.].
+prog(prog(R)) --> retStatement(R),
+    ['.'].
 
-expression(expression(ID,P)) --> declaration(ID),
-    [;],
-     expression(P).
+prog(prog(ID,P)) --> declaration(ID),
+    [';'],
+     prog(P).
 
-expression(expression(ID,B,P)) --> assignment(ID,B),
-    [;],
-    expression(P).
+prog(prog(ID,B,P)) --> assignment(ID,B),
+    [';'],
+    prog(P).
 
-expression(expression(ID,B,P)) --> declAssignment(ID,B),
-    [;],
-    expression(P).
+prog(prog(ID,B,P)) --> declAssignment(ID,B),
+    [';'],
+    prog(P).
 
-retStatement(ret(B)) --> [return],
+retStatement(return(B)) --> [return],
     base(B).
 
-declaration(dec(ID)) --> [var],
+declaration(decl(ID)) --> [var],
     [ID].
 
 assignment(assign(ID,B)) --> [ID],
-    [<--],
+    ['<-'],
     base(B).
 
 declAssignment(declA(ID,B)) --> [var],
     ID,
-    [<--],
+    ['<-'],
     base(B).
+
+base(base(B)) --> [B],
+	{not(number(B))}.
+
+base(base(B)) --> ['('],
+	expression(B),
+	[')'].
+
 
 
 
