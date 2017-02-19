@@ -13,7 +13,7 @@
 % parse: note you will have to change this to have it work for general
 % expressionrams; at the moment, it will only parse expressions and return to
 % you an expression node in the AST variable
-parse(TokenList, AST) :- phrase(prog(AST), TokenList, []).
+parse(TokenList, AST) :- phrase(prog(AST), TokenList).
 
 
 
@@ -71,29 +71,29 @@ mulOp(mulOp('/')) --> ['/'].
 prog(prog(R)) --> retStatement(R),
     ['.'].
 
+prog(prog(ID,B,P)) --> declAssignment(ID,B),
+    [';'],
+    prog(P).
+
 prog(prog(ID,P)) --> declaration(ID),
     [';'],
-     prog(P).
+	prog(P).
 
 prog(prog(ID,B,P)) --> assignment(ID,B),
     [';'],
     prog(P).
 
-prog(prog(ID,B,P)) --> declAssignment(ID,B),
-    [';'],
-    prog(P).
-
-retStatement(return(B)) --> [return],
+retStatement(return(B)) --> ['return'],
     base(B).
 
-declaration(decl(ID)) --> [var],
+declaration(declaration(ID)) --> ['var'],
     [ID].
 
-assignment(assign(ID,B)) --> [ID],
+assignment(assignment(ID,B)) --> [ID],
     ['<-'],
     base(B).
 
-declAssignment(declA(ID,B)) --> [var],
+declAssignment(declAssignment(ID,B)) --> ['var'],
     ID,
     ['<-'],
     base(B).
