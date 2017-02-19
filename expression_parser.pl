@@ -71,13 +71,13 @@ mulOp(mulOp('/')) --> ['/'].
 prog(prog(R)) --> retStatement(R),
     ['.'].
 
-prog(prog(ID,B,P)) --> declAssignment(ID,B),
-    [';'],
-    prog(P).
-
 prog(prog(ID,P)) --> declaration(ID),
     [';'],
 	prog(P).
+
+prog(prog(ID,B,P)) --> declAssignment(ID,B),
+    [';'],
+    prog(P).
 
 prog(prog(ID,B,P)) --> assignment(ID,B),
     [';'],
@@ -89,14 +89,16 @@ retStatement(return(B)) --> ['return'],
 declaration(declaration(ID)) --> ['var'],
     [ID].
 
-assignment(assignment(ID,B)) --> [ID],
+assignment(variable(ID), base(B)) --> variable(ID),
     ['<-'],
     base(B).
 
-declAssignment(declAssignment(ID,B)) --> ['var'],
-    ID,
+declAssignment(variable(ID), base(B)) --> ['var'],
+    variable(ID),
     ['<-'],
     base(B).
+
+variable(variable(ID)) --> [ID].
 
 base(base(B)) --> [B],
 	{not(number(B))}.
