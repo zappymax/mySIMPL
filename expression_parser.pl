@@ -89,16 +89,14 @@ retStatement(return(B)) --> ['return'],
 declaration(declaration(ID)) --> ['var'],
     [ID].
 
-assignment(variable(ID), base(B)) --> variable(ID),
+assignment(ID, base(B)) --> [ID],
     ['<-'],
     base(B).
 
-declAssignment(variable(ID), base(B)) --> ['var'],
-    variable(ID),
+declAssignment(ID, base(B)) --> ['var'],
+    [ID],
     ['<-'],
     base(B).
-
-variable(variable(ID)) --> [ID].
 
 base(base(B)) --> [B],
 	{not(number(B))}.
