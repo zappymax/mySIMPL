@@ -23,15 +23,6 @@ parse(TokenList, AST) :- phrase(prog(AST), TokenList).
 % a number (i.e. bind N to the token, but then check if it is a number
 base(base(N)) --> [N], {number(N)}.
 
-base(base(B)) --> [B],
-	{not(number(B))}.
-
-base(base(B)) --> ['('],
-	expression(B),
-	[')'].
-
-
-
 % simple case: just a term
 expression(expression(T)) --> term(T).
 % recursive case: expression then term. Since we can't do the following...
@@ -106,6 +97,13 @@ declAssignment(ID, base(B)) --> ['var'],
     [ID],
     ['<-'],
     base(B).
+
+base(base(B)) --> [B],
+	{not(number(B))}.
+
+base(base(B)) --> ['('],
+	expression(B),
+	[')'].
 
 
 
