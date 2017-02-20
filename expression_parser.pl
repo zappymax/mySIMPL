@@ -109,9 +109,7 @@ declAssignment(identifier(ID), base(B)) --> ['var'],
 
 identifier(identifier(ID)) --> [ID].
 
-<<<<<<< HEAD
 evalProg(identifier(ID), assoc(L), L):-
-=======
 % Evaluation rules
 
 evaluate(AST, Number):-
@@ -131,6 +129,5 @@ evaluateProg():-.
 evaluateProg():-.
 
 
-/*evalDeclaration(declaration(ID), assoc(L)):-
->>>>>>> 83cd4b30c3dd4d3a3547169764ecff73dd6ef4cb
+evalDeclaration(declaration(ID), assoc(L)):-
     put_assoc(ID, L, 'NULL', L).

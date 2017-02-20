@@ -107,23 +107,30 @@ declAssignment(identifier(ID), base(B)) --> ['var'],
     ['<-'],
     base(B).
 
-identifier(identifier(ID)) --> [ID]. 
+identifier(identifier(ID)) --> [ID].
 
 <<<<<<< HEAD
-evalDeclaration(ID, L):-
+evalProg(identifier(ID), assoc(L), L):-
 =======
 % Evaluation rules
 
 evaluate(AST, Number):-
-    empty_assoc(var_list)
+    empty_assoc(var_list_in),
+    evaluateProg(AST, var_list_in, var_list_out).
+
+%rule for return
+evaluateProg():-.
+
+%rule for assignment
+evaluateProg():-.
+
+%rule for declaration
+evaluateProg():-.
+
+%rule for declaration assignment
+evaluateProg():-.
+
 
 /*evalDeclaration(declaration(ID), assoc(L)):-
->>>>>>> 1dd0acdae7b466431c7755371edba9b36ca4a402
+>>>>>>> 83cd4b30c3dd4d3a3547169764ecff73dd6ef4cb
     put_assoc(ID, L, 'NULL', L).
-
-evalAssignment(assignment(ID, N), assoc(L)):-
-    put_assoc(ID, L, N, L).
-
-evalDeclAssignment(declAssignment(ID, N), assoc(L)):-
-    put_assoc(ID, L, N, L).*/
-
