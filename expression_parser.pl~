@@ -135,8 +135,7 @@ evaluateProg(prog(declAssignment(identifier(ID), base(B))), var_list_in, var_lis
     put_assoc(ID, var_list_in, R, var_list_out).
 
 evalBase(base(B), var_list_in, ret):-
-    ret is B,
-    {number(ret)}.
+    ret is B.
 
 evalBase(identifier(ID), var_list_in, ret):-
     get_assoc(ID, var_list_in, val),

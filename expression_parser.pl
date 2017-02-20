@@ -96,7 +96,7 @@ retStatement(return(B)) --> ['return'],
     base(B).
 
 declaration(declaration(ID)) --> ['var'],
-    [ID].
+    identifier(ID).
 
 assignment(identifier(ID), base(B)) --> identifier(ID),
     ['<-'],
