@@ -127,26 +127,31 @@ evaluate(AST, Number):-
     evaluateProg(AST, var_list_in, var_list_out, Number).
 
 %rule for assignment
-evaluateProg(prog(assignment(identifier(ID), base(B))), var_list_in, var_list_out):-
+evaluateProg(prog(assignment(identifier(ID), base(B))), var_list_in, var_list_out, Number):-
     evalBase(B, var_list_in, R),
     put_assoc(ID, var_list_in, R, var_list_out).
 
 %rule for declaration
-evaluateProg(prog(declaration(identifier(ID))), var_list_in, var_list_out):-
+evaluateProg(prog(declaration(identifier(ID))), var_list_in, var_list_out, Number):-
     put_assoc(ID, var_list_in, 'NULL', var_list_out).
 
 
 %rule for declaration assignment
-evaluateProg(prog(declAssignment(identifier(ID), base(B))), var_list_in, var_list_out):-
+evaluateProg(prog(declAssignment(identifier(ID), base(B))), var_list_in, var_list_out, Number):-
     evalBase(B, var_list_in, R),
     put_assoc(ID, var_list_in, R, var_list_out).
+
+%rule for return
+evaluateProg(prog(return(base(B))), var_list_in, var_list_out, Number):-
+    evalBase(B, var_list_in, R),
+    Number is R.
 
 evalBase(base(B), var_list_in, ret):-
     ret is B.
 
 evalBase(identifier(ID), var_list_in, ret):-
-    get_assoc(ID, var_list_in, val),
-    ret is val.
+    get_assoc(ID, var_list_in, Val),
+    ret is Val.
 
 %evalBase()
 

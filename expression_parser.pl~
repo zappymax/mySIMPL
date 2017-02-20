@@ -24,7 +24,8 @@ parse(TokenList, AST) :- phrase(prog(AST), TokenList).
 base(base(N)) --> [N], {number(N)}.
 
 base(base(B)) --> identifier(B),
-	{not(number(B))}.
+	{not(number(B))},
+    {not(keywords(B))}.
 
 base(base(B)) --> ['('],
 	expression(B),
@@ -77,6 +78,17 @@ mulOp(mulOp('/')) --> ['/'].
 % After that, you need to define evaluation rules that will take an AST and
 % "run" your expressionram.
 
+%keywords
+keywords(+).
+keywords(-).
+keywords(*).
+keywords(/).
+keywords(<-).
+keywords(;).
+keywords(var).
+keywords(return).
+
+
 prog(prog(R)) --> retStatement(R),
     ['.'].
 
@@ -96,7 +108,7 @@ retStatement(return(B)) --> ['return'],
     base(B).
 
 declaration(declaration(ID)) --> ['var'],
-    [ID].
+    identifier(ID).
 
 assignment(identifier(ID), base(B)) --> identifier(ID),
     ['<-'],
@@ -109,37 +121,37 @@ declAssignment(identifier(ID), base(B)) --> ['var'],
 
 identifier(identifier(ID)) --> [ID].
 
-%evalProg(identifier(ID), assoc(L), L):-
 % Evaluation rules
-
 evaluate(AST, Number):-
     empty_assoc(var_list_in),
-    evaluateProg(AST, var_list_in, var_list_out).
-
-%rule for return
-%evaluateProg(prog(retStatement(base(B))), var_list_in, var_list_out):-.
+    evaluateProg(AST, var_list_in, var_list_out, Number).
 
 %rule for assignment
-evaluateProg(prog(assignment(identifier(ID), base(B))), var_list_in, var_list_out):-
+evaluateProg(prog(assignment(identifier(ID), base(B))), var_list_in, var_list_out, Number):-
     evalBase(B, var_list_in, R),
     put_assoc(ID, var_list_in, R, var_list_out).
 
 %rule for declaration
-evaluateProg(prog(declaration(identifier(ID))), var_list_in, var_list_out):-
+evaluateProg(prog(declaration(identifier(ID))), var_list_in, var_list_out, Number):-
     put_assoc(ID, var_list_in, 'NULL', var_list_out).
 
 
 %rule for declaration assignment
-evaluateProg(prog(declAssignment(identifier(ID), base(B))), var_list_in, var_list_out):-
+evaluateProg(prog(declAssignment(identifier(ID), base(B))), var_list_in, var_list_out, Number):-
     evalBase(B, var_list_in, R),
     put_assoc(ID, var_list_in, R, var_list_out).
+
+%rule for return
+evaluateProg(prog(retStatement(base(B))), var_list_in, var_list_out, Number):-
+    evalBase(B, var_list_in, R),
+    Number is R.
 
 evalBase(base(B), var_list_in, ret):-
     ret is B.
 
 evalBase(identifier(ID), var_list_in, ret):-
-    get_assoc(ID, var_list_in, val),
-    ret is val.
+    get_assoc(ID, var_list_in, Val),
+    ret is Val.
 
 %evalBase()
 
