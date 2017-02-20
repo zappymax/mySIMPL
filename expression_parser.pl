@@ -92,13 +92,13 @@ prog(prog(ID,B,P)) --> assignment(ID,B),
     [';'],
     prog(P).
 
-(retStatement(return(B)) --> ['return'],
+retStatement(return(B)) --> ['return'],
     base(B).
 
 declaration(declaration(ID)) --> ['var'],
     [ID].
 
-assignment(ID, base(B)) --> [ID],
+assignment(identifier(ID), base(B)) --> identifier(ID),
     ['<-'],
     base(B).
 
@@ -107,13 +107,7 @@ declAssignment(ID, base(B)) --> ['var'],
     ['<-'],
     base(B).
 
+identifier(identifier(ID)) --> [ID].
 
-evalDeclaration(ID, L):-
+evalProg(identifier(ID), assoc(L), L):-
     put_assoc(ID, L, 'NULL', L).
-
-evalAssignment(assignment(ID, N), assoc(L)):-
-    put_assoc(ID, L, N, L).
-
-evalDeclAssignment(declAssignment(ID, N), assoc(L)):-
-    put_assoc(ID, L, N, L).
-
