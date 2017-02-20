@@ -23,7 +23,7 @@ parse(TokenList, AST) :- phrase(prog(AST), TokenList).
 % a number (i.e. bind N to the token, but then check if it is a number
 base(base(N)) --> [N], {number(N)}.
 
-base(base(B)) --> [B],
+base(base(B)) --> identifier(B),
 	{not(number(B))}.
 
 base(base(B)) --> ['('],
@@ -92,25 +92,55 @@ prog(prog(ID,B,P)) --> assignment(ID,B),
     [';'],
     prog(P).
 
-(retStatement(return(B)) --> ['return'],
+retStatement(return(B)) --> ['return'],
     base(B).
 
 declaration(declaration(ID)) --> ['var'],
     [ID].
 
-assignment(ID, base(B)) --> [ID],
+assignment(identifier(ID), base(B)) --> identifier(ID),
     ['<-'],
     base(B).
 
-declAssignment(ID, base(B)) --> ['var'],
-    [ID],
+declAssignment(identifier(ID), base(B)) --> ['var'],
+    identifier(ID),
     ['<-'],
     base(B).
 
+identifier(identifier(ID)) --> [ID].
 
-evalDeclaration(declaration(ID), assoc(L)):-
-    put_assoc(ID, L, 'NULL', L).
+%evalProg(identifier(ID), assoc(L), L):-
+% Evaluation rules
 
-evalAssignment(assignment(ID, N), assoc(L)):-
-    put_assoc(ID, L, N, L).
+evaluate(AST, Number):-
+    empty_assoc(var_list_in),
+    evaluateProg(AST, var_list_in, var_list_out).
+
+%rule for return
+%evaluateProg(prog(retStatement(base(B))), var_list_in, var_list_out):-.
+
+%rule for assignment
+evaluateProg(prog(assignment(identifier(ID), base(B))), var_list_in, var_list_out):-
+    evalBase(B, var_list_in, R),
+    put_assoc(ID, var_list_in, R, var_list_out).
+
+%rule for declaration
+evaluateProg(prog(declaration(identifier(ID))), var_list_in, var_list_out):-
+    put_assoc(ID, var_list_in, 'NULL', var_list_out).
+
+
+%rule for declaration assignment
+evaluateProg(prog(declAssignment(identifier(ID), base(B))), var_list_in, var_list_out):-
+    evalBase(B, var_list_in, R),
+    put_assoc(ID, var_list_in, R, var_list_out).
+
+evalBase(base(B), var_list_in, ret):-
+    ret is B.
+
+evalBase(identifier(ID), var_list_in, ret):-
+    get_assoc(ID, var_list_in, val),
+    ret is val.
+
+%evalBase()
+
 
