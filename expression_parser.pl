@@ -23,9 +23,9 @@ parse(TokenList, AST) :- phrase(prog(AST), TokenList).
 % a number (i.e. bind N to the token, but then check if it is a number
 base(base(N)) --> [N], {number(N)}.
 
-base(base(B)) --> identifier(B),
-	{not(number(B))},
-    {not(keywords(B))}.
+base(base(B)) --> {not(number(B))},
+    {not(keywords(B))},
+    identifier(B).
 
 base(base(B)) --> ['('],
 	expression(B),
