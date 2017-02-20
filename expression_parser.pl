@@ -115,15 +115,19 @@ evalProg(identifier(ID), assoc(L), L):-
 % Evaluation rules
 
 evaluate(AST, Number):-
-    empty_assoc(var_list),
-    evaluateProg().
+    empty_assoc(var_list_in),
+    evaluateProg(AST, var_list_in, var_list_out).
 
+%rule for return
 evaluateProg():-.
 
+%rule for assignment
 evaluateProg():-.
 
+%rule for declaration
 evaluateProg():-.
 
+%rule for declaration assignment
 evaluateProg():-.
 
 
