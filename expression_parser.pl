@@ -24,7 +24,8 @@ parse(TokenList, AST) :- phrase(prog(AST), TokenList).
 base(base(N)) --> [N], {number(N)}.
 
 base(base(B)) --> [B],
-	{not(number(B))}.
+	{not(number(B))},
+    {not(keywords(B))}.
 
 base(base(B)) --> ['('],
 	expression(B),
@@ -77,6 +78,17 @@ mulOp(mulOp('/')) --> ['/'].
 % After that, you need to define evaluation rules that will take an AST and
 % "run" your expressionram.
 
+%keywords
+keywords(+).
+keywords(-).
+keywords(*).
+keywords(/).
+keywords(<-).
+keywords(;).
+keywords(var).
+keywords(return).
+
+
 prog(prog(R)) --> retStatement(R),
     ['.'].
 
@@ -113,10 +125,12 @@ identifier(identifier(ID)) --> [ID].
 
 evaluate(AST, Number):-
     empty_assoc(var_list_in),
-    evaluateProg(AST, var_list_in, var_list_out).
+    evaluateProg(AST, var_list_in, var_list_out, Number).
 
 %rule for return
-evaluateProg():-.
+evaluateProg(prog(return(R)), var_list_in, var_list_out, Number):-
+    
+    evaluateReturn(return(R), var_list_in, var_list_out, Number).
 
 %rule for assignment
 evaluateProg():-.
