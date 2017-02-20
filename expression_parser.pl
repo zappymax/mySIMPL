@@ -123,35 +123,35 @@ identifier(identifier(ID)) --> [ID].
 
 % Evaluation rules
 evaluate(AST, Number):-
-    empty_assoc(var_list_in),
-    evaluateProg(AST, var_list_in, var_list_out, Number).
+    empty_assoc(Var_list_in),
+    evaluateProg(AST, Var_list_in, Var_list_out, Number).
 
 %rule for assignment
-evaluateProg(prog(assignment(identifier(ID), base(B))), var_list_in, var_list_out, Number):-
-    evalBase(B, var_list_in, R),
-    put_assoc(ID, var_list_in, R, var_list_out).
+evaluateProg(prog(assignment(identifier(ID), base(B))), Var_list_in, Var_list_out, Number):-
+    evalBase(B, Var_list_in, R),
+    put_assoc(ID, Var_list_in, R, Var_list_out).
 
 %rule for declaration
-evaluateProg(prog(declaration(identifier(ID))), var_list_in, var_list_out, Number):-
-    put_assoc(ID, var_list_in, 'NULL', var_list_out).
+evaluateProg(prog(declaration(identifier(ID))), Var_list_in, Var_list_out, Number):-
+    put_assoc(ID, Var_list_in, 'NULL', Var_list_out).
 
 
 %rule for declaration assignment
-evaluateProg(prog(declAssignment(identifier(ID), base(B))), var_list_in, var_list_out, Number):-
-    evalBase(B, var_list_in, R),
-    put_assoc(ID, var_list_in, R, var_list_out).
+evaluateProg(prog(declAssignment(identifier(ID), base(B))), Var_list_in, Var_list_out, Number):-
+    evalBase(B, Var_list_in, R),
+    put_assoc(ID, Var_list_in, R, Var_list_out).
 
 %rule for return
-evaluateProg(prog(return(base(B))), var_list_in, var_list_out, Number):-
-    evalBase(B, var_list_in, R),
+evaluateProg(prog(return(base(B))), Var_list_in, Var_list_out, Number):-
+    evalBase(base(B), Var_list_in, R),
     Number is R.
 
-evalBase(base(B), var_list_in, ret):-
-    ret is B.
+evalBase(base(B), Var_list_in, Ret):-
+    Ret is B.
 
-evalBase(identifier(ID), var_list_in, ret):-
-    get_assoc(ID, var_list_in, Val),
-    ret is Val.
+evalBase(identifier(ID), Var_list_in, Ret):-
+    get_assoc(ID, Var_list_in, Val),
+    Ret is Val.
 
 %evalBase()
 
