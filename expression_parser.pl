@@ -102,8 +102,8 @@ assignment(identifier(ID), base(B)) --> identifier(ID),
     ['<-'],
     base(B).
 
-declAssignment(ID, base(B)) --> ['var'],
-    [ID],
+declAssignment(identifier(ID), base(B)) --> ['var'],
+    identifier(ID),
     ['<-'],
     base(B).
 
