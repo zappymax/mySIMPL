@@ -108,7 +108,7 @@ declAssignment(ID, base(B)) --> ['var'],
     base(B).
 
 
-evalDeclaration(declaration(ID), assoc(L)):-
+evalDeclaration(ID, L):-
     put_assoc(ID, L, 'NULL', L).
 
 evalAssignment(assignment(ID, N), assoc(L)):-
