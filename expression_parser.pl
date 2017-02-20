@@ -112,7 +112,17 @@ identifier(identifier(ID)) --> [ID].
 % Evaluation rules
 
 evaluate(AST, Number):-
-    empty_assoc(var_list)
+    empty_assoc(var_list),
+    evaluateProg().
+
+evaluateProg():-.
+
+evaluateProg():-.
+
+evaluateProg():-.
+
+evaluateProg():-.
+
 
 /*evalDeclaration(declaration(ID), assoc(L)):-
     put_assoc(ID, L, 'NULL', L).
