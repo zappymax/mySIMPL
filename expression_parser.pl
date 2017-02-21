@@ -24,7 +24,6 @@ parse(TokenList, AST) :- phrase(prog(AST), TokenList).
 base(base(N)) --> [N], {number(N)}.
 
 base(base(B)) --> {not(number(B))},
-    %not(keywords(B),
     identifier(B).
 
 base(base(B)) --> ['('],
@@ -119,7 +118,8 @@ declAssignment(declAssignment(ID,B)) --> ['var'],
     ['<-'],
     base(B).
 
-identifier(identifier(ID)) --> [ID].
+identifier(identifier(ID)) --> [ID],
+    {not(keywords(ID))}.
 
 % Evaluation rules
 evaluate(AST, Number):-
@@ -151,62 +151,72 @@ eval(declAssignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number)
     eval(base(B), Var_list_in, R),
     put_assoc(ID, Var_list_in, R, Var_list_out).
 
+%base case for base
 eval(base(B), Var_list_in, Ret):-
     number(B),
-    %eval(B, Var_list_in, Ret).
     Ret is B.
 
+%base case for ID
 eval(base(B), Var_list_in, Ret):-
     not(number(B)),
     eval(B, Var_list_in, Ret).
-    %Ret is B.
 
+%for expression +
 eval(expression(A, addOp('+'),B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
     Ret is RA + RB.
 
+%for expression -
 eval(expression(A, addOp('-'),B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
     Ret is RA - RB.
 
+%for expression base case
 eval(expression(T), Var_list_in, Ret):-
     eval(T, Var_list_in, RT),
     Ret is RT.
 
+%for term base case
 eval(term(F), Var_list_in, Ret):-
     eval(F,Var_list_in,RF),
     Ret is RF.
 
+%for factor base case
 eval(factor(B), Var_list_in, Ret):-
     eval(B, Var_list_in, RB),
     Ret is RB.
 
+%for term /
 eval(term(A, mulOp('/'), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B,Var_list_in, RB),
     Ret is RA/RB.
 
+%for term *
 eval(term(A, mulOp('*'), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B,Var_list_in, RB),
     Ret is RA*RB.
 
+%for eval of ID
 eval(identifier(ID), Var_list_in, Ret):-
     get_assoc(ID, Var_list_in, Val),
     Ret is Val.
 
+%for factor base case
 eval(factor(B), Var_list_in, Var_list_out, Number):-
     eval(B, Var_list_in, Var_list_out, R),
     Number is R.
 
+%for term(factor()) base case
 eval(term(factor(F)), Var_list_in, Var_list_out, Number):-
      eval(F, Var_list_in, Var_list_out, R),
      Number is R.
 
 
-
+%test cases
 %parse(['var', 'x', ';', 'x','<-', '(', 5, '*', 2, ')', ';', 'return', '(', 'x', '+', 1, ')', '.'], AST), evaluate(AST,N).
 % This command evaluates, so if it doesn't work for you, it's your fault
 

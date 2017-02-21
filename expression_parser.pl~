@@ -24,7 +24,6 @@ parse(TokenList, AST) :- phrase(prog(AST), TokenList).
 base(base(N)) --> [N], {number(N)}.
 
 base(base(B)) --> {not(number(B))},
-    %not(keywords(B),
     identifier(B).
 
 base(base(B)) --> ['('],
@@ -119,7 +118,8 @@ declAssignment(declAssignment(ID,B)) --> ['var'],
     ['<-'],
     base(B).
 
-identifier(identifier(ID)) --> [ID].
+identifier(identifier(ID)) --> [ID],
+    {not(keywords(ID))}.
 
 % Evaluation rules
 evaluate(AST, Number):-
@@ -207,6 +207,7 @@ eval(term(factor(F)), Var_list_in, Var_list_out, Number):-
 
 
 
-%evalBase()
+%parse(['var', 'x', ';', 'x','<-', '(', 5, '*', 2, ')', ';', 'return', '(', 'x', '+', 1, ')', '.'], AST), evaluate(AST,N).
+% This command evaluates, so if it doesn't work for you, it's your fault
 
 
