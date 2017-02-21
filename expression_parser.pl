@@ -138,8 +138,8 @@ evaluateProg(prog(S,P), Var_list_in, Var_list_out, Number):-
 %rule for assignment
 eval(assignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number):-
     %eval(B, Var_list_in, R),
-    write('ID IS '),writeln(ID),
-    write('BASE IS '),writeln(B),
+    %write('ID IS '),writeln(ID),
+    %write('BASE IS '),writeln(B),
     eval(base(B), Var_list_in, RB),
     put_assoc(ID, Var_list_in, RB, Var_list_out).
 
@@ -149,7 +149,7 @@ eval(declaration(identifier(ID)), Var_list_in, Var_list_out, Number):-
 
 %rule for declaration assignment
 eval(declAssignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number):-
-    eval(B, Var_list_in, R),
+    eval(base(B), Var_list_in, R),
     put_assoc(ID, Var_list_in, R, Var_list_out).
 
 eval(base(B), Var_list_in, Ret):-
