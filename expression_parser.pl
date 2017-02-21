@@ -24,7 +24,7 @@ parse(TokenList, AST) :- phrase(prog(AST), TokenList).
 base(base(N)) --> [N], {number(N)}.
 
 base(base(B)) --> {not(number(B))},
-    {not(keywords(B))},
+    %{not(keywords(B))},
     identifier(B).
 
 base(base(B)) --> ['('],
@@ -92,15 +92,15 @@ keywords(return).
 prog(prog(R)) --> retStatement(R),
     ['.'].
 
-prog(prog(ID,P)) --> declaration(ID),
+prog(prog(S,P)) --> declaration(S),
     [';'],
 	prog(P).
 
-prog(prog(ID,B,P)) --> declAssignment(ID,B),
+prog(prog(S,P)) --> declAssignment(S),
     [';'],
     prog(P).
 
-prog(prog(ID,B,P)) --> assignment(ID,B),
+prog(prog(S,P)) --> assignment(S),
     [';'],
     prog(P).
 
@@ -110,11 +110,11 @@ retStatement(return(B)) --> ['return'],
 declaration(declaration(ID)) --> ['var'],
     identifier(ID).
 
-assignment(identifier(ID), base(B)) --> identifier(ID),
+assignment(assignment(ID,B)) --> identifier(ID),
     ['<-'],
     base(B).
 
-declAssignment(identifier(ID), base(B)) --> ['var'],
+declAssignment(declAssignment(ID,B)) --> ['var'],
     identifier(ID),
     ['<-'],
     base(B).
