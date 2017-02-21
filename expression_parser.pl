@@ -132,7 +132,7 @@ evaluateProg(prog(return(R)), Var_list_in, Var_list_out, Number):-
 
 evaluateProg(prog(S,P), Var_list_in, Var_list_out, Number):-
     eval(S, Var_list_in, Var_list_out, Number),
-    evaluateProg(P, Var_list_in, Var_list_out, Number).
+    evaluateProg(P, Var_list_out, Var_list_temp, Number).
 
 
 %rule for assignment
@@ -163,7 +163,7 @@ eval(base(B), Var_list_in, Ret):-
     %Ret is B.
 
 eval(identifier(ID), Var_list_in, Ret):-
-    %get_assoc(ID, Var_list_in, Val),
+    get_assoc(ID, Var_list_in, Val),
     Ret is Val.
 
 %evalBase()
