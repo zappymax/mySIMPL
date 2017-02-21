@@ -165,6 +165,16 @@ eval(identifier(ID), Var_list_in, Ret):-
     get_assoc(ID, Var_list_in, Val),
     Ret is Val.
 
+eval(factor(B), Var_list_in, Var_list_out, Number):-
+    eval(B, Var_list_in, Var_list_out, R),
+    Number is R.
+
+eval(term(factor(F)), Var_list_in, Var_list_out, Number):-
+     eval(F, Var_list_in, Var_list_out, R),
+     Number is R.
+
+
+
 %evalBase()
 
 

@@ -23,8 +23,8 @@ parse(TokenList, AST) :- phrase(prog(AST), TokenList).
 % a number (i.e. bind N to the token, but then check if it is a number
 base(base(N)) --> [N], {number(N)}.
 
-base(base(B)) --> {not(number(B))},
-    %{not(keywords(B))},
+base(base(B)) --> not(number(B),
+    not(keywords(B),
     identifier(B).
 
 base(base(B)) --> ['('],
@@ -137,11 +137,6 @@ evaluateProg(prog(S,P), Var_list_in, Var_list_out, Number):-
 
 %rule for assignment
 eval(assignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number):-
-    %eval(B, Var_list_in, R),
-    write('ID IS '),writeln(ID),
-    write('BASE IS '),writeln(B),
-    eval(base(B), Var_list_in, RET),
-    put_assoc(ID, Var_list_in, RET, Var_list_out).
     %write('ID IS '),writeln(ID),
     %write('BASE IS '),writeln(B),
     eval(base(B), Var_list_in, RB),
@@ -169,6 +164,16 @@ eval(base(B), Var_list_in, Ret):-
 eval(identifier(ID), Var_list_in, Ret):-
     get_assoc(ID, Var_list_in, Val),
     Ret is Val.
+
+eval(factor(B), Var_list_in, Var_list_out, Number):-
+    eval(B, Var_list_in, Var_list_out, R),
+    Number is R.
+
+eval(term(factor(F)), Var_list_in, Var_list_out, Number):-
+     eval(F, Var_list_in, Var_list_out, R),
+     Number is R.
+
+
 
 %evalBase()
 
