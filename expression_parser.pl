@@ -162,6 +162,38 @@ eval(base(B), Var_list_in, Ret):-
     eval(B, Var_list_in, Ret).
     %Ret is B.
 
+eval(expression(A, addOp('+'),B), Var_list_in, Ret):-
+    eval(A, Var_list_in, RA),
+    eval(B, Var_list_in, RB),
+    Ret is RA + RB.
+
+eval(expression(A, addOp('-'),B), Var_list_in, Ret):-
+    eval(A, Var_list_in, RA),
+    eval(B, Var_list_in, RB),
+    Ret is RA - RB.
+
+eval(expression(T), Var_list_in, Ret):-
+    eval(T, Var_list_in, RT),
+    Ret is RT.
+
+eval(term(F), Var_list_in, Ret):-
+    eval(F,Var_list_in,RF),
+    Ret is RF.
+
+eval(factor(B), Var_list_in, Ret):-
+    eval(B, Var_list_in, RB),
+    Ret is RB.
+
+eval(term(A, mulOp('/'), B), Var_list_in, Ret):-
+    eval(A, Var_list_in, RA),
+    eval(B,Var_list_in, RB),
+    Ret is RA/RB.
+
+eval(term(A, mulOp('*'), B), Var_list_in, Ret):-
+    eval(A, Var_list_in, RA),
+    eval(B,Var_list_in, RB),
+    Ret is RA*RB.
+
 eval(identifier(ID), Var_list_in, Ret):-
     get_assoc(ID, Var_list_in, Val),
     Ret is Val.
