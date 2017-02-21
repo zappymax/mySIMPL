@@ -13,7 +13,7 @@
 % parse: note you will have to change this to have it work for general
 % expressionrams; at the moment, it will only parse expressions and return to
 % you an expression node in the AST variable
-parse(TokenList, prog(AST)) :- phrase(prog(AST), TokenList).
+parse(TokenList, AST) :- phrase(prog(AST), TokenList).
 
 
 
@@ -126,30 +126,33 @@ evaluate(AST, Number):-
     empty_assoc(Var_list_in),
     evaluateProg(AST, Var_list_in, Var_list_out, Number).
 
+evaluateProg(prog(return(R)), Var_list_in, Var_list_out, Number):-
+    eval(R, Var_list_in, X),
+    Number is X.
+
+evaluateProg(prog(S,P), Var_list_in, Var_list_out, Number):-
+    eval(S, Var_list_in, Var_list_out, Number),
+    evaluateProg(P, Var_list_in, Var_list_out, Number).
+
+
 %rule for assignment
-evaluateProg(prog(assignment(identifier(ID), base(B))), Var_list_in, Var_list_out, Number):-
-    evalBase(B, Var_list_in, R),
+eval(assignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number):-
+    eval(B, Var_list_in, R),
     put_assoc(ID, Var_list_in, R, Var_list_out).
 
 %rule for declaration
-evaluateProg(prog(declaration(identifier(ID))), Var_list_in, Var_list_out, Number):-
+eval(declaration(identifier(ID)), Var_list_in, Var_list_out, Number):-
     put_assoc(ID, Var_list_in, 'NULL', Var_list_out).
 
-
 %rule for declaration assignment
-evaluateProg(prog(declAssignment(identifier(ID), base(B))), Var_list_in, Var_list_out, Number):-
-    evalBase(B, Var_list_in, R),
+eval(declAssignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number):-
+    eval(B, Var_list_in, R),
     put_assoc(ID, Var_list_in, R, Var_list_out).
 
-%rule for return
-evaluateProg(prog(return(base(B))), Var_list_in, Var_list_out, Number):-
-    evalBase(base(B), Var_list_in, R),
-    Number is R.
-
-evalBase(base(B), Var_list_in, Ret):-
+eval(base(B), Var_list_in, Ret):-
     Ret is B.
 
-evalBase(identifier(ID), Var_list_in, Ret):-
+eval(identifier(ID), Var_list_in, Ret):-
     get_assoc(ID, Var_list_in, Val),
     Ret is Val.
 
