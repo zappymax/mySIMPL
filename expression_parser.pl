@@ -141,7 +141,7 @@ eval(assignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number):-
     write('ID IS '),writeln(ID),
     write('BASE IS '),writeln(B),
     eval(base(B), Var_list_in, RB),
-    put_assoc(RID, Var_list_in, RB, Var_list_out).
+    put_assoc(ID, Var_list_in, RB, Var_list_out).
 
 %rule for declaration
 eval(declaration(identifier(ID)), Var_list_in, Var_list_out, Number):-
