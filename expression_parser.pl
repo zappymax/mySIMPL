@@ -153,12 +153,12 @@ eval(declAssignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number)
     put_assoc(ID, Var_list_in, R, Var_list_out).
 
 eval(base(B), Var_list_in, Ret):-
-    {number(B)},
+    number(B),
     %eval(B, Var_list_in, Ret).
     Ret is B.
 
 eval(base(B), Var_list_in, Ret):-
-    {not(number(B))},
+    not(number(B)),
     eval(B, Var_list_in, Ret).
     %Ret is B.
 
