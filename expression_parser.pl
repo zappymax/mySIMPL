@@ -23,8 +23,8 @@ parse(TokenList, AST) :- phrase(prog(AST), TokenList).
 % a number (i.e. bind N to the token, but then check if it is a number
 base(base(N)) --> [N], {number(N)}.
 
-base(base(B)) --> not(number(B),
-    not(keywords(B),
+base(base(B)) --> {not(number(B))},
+    %not(keywords(B),
     identifier(B).
 
 base(base(B)) --> ['('],
@@ -207,6 +207,7 @@ eval(term(factor(F)), Var_list_in, Var_list_out, Number):-
 
 
 
-%evalBase()
+%parse(['var', 'x', ';', 'x','<-', '(', 5, '*', 2, ')', ';', 'return', '(', 'x', '+', 1, ')', '.'], AST), evaluate(AST,N).
+% This command evaluates, so if it doesn't work for you, it's your fault
 
 
