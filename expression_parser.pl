@@ -13,7 +13,7 @@
 % parse: note you will have to change this to have it work for general
 % expressionrams; at the moment, it will only parse expressions and return to
 % you an expression node in the AST variable
-parse(TokenList, AST) :- phrase(prog(AST), TokenList).
+parse(TokenList, prog(AST)) :- phrase(prog(AST), TokenList).
 
 
 
