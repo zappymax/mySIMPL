@@ -30,6 +30,8 @@ base(base(B)) --> ['('],
 	expression(B),
 	[')'].
 
+base(base(B)) --> funcCall(B).
+
 
 
 % simple case: just a term
@@ -72,6 +74,16 @@ addOp(addOp('-')) --> ['-'].
 mulOp(mulOp('*')) --> ['*'].
 mulOp(mulOp('/')) --> ['/'].
 
+%Booleans and Comps
+logOp(logOp('&&')) --> ['&&'].
+logOp(logOp('||')) --> ['||'].
+comp(comp('==')) --> ['=='].
+comp(comp('<')) --> ['<'].
+comp(comp('>')) --> ['>'].
+comp(comp('<=')) --> ['<='].
+comp(comp('>=')) --> ['>='].
+comp(comp('!=')) --> ['!='].
+
 
 % You need to finish adding the rest of the parsing rules.
 % After that, you need to define evaluation rules that will take an AST and
@@ -87,21 +99,42 @@ keywords(;).
 keywords(var).
 keywords(return).
 
+funcDecl(funcDecl(ID,PAR,PROG)) --> ['function'],
+    identifier(ID),
+    ['('],
+    [PAR],
+    [')'],
+    ['{'],
+    prog(PROG),
+    ['}'].
 
 prog(prog(R)) --> retStatement(R),
     ['.'].
 
-prog(prog(S,P)) --> declaration(S),
-    [';'],
-	prog(P).
-
-prog(prog(S,P)) --> declAssignment(S),
+prog(prog(S,P)) --> funcDecl(S),
     [';'],
     prog(P).
 
-prog(prog(S,P)) --> assignment(S),
+prog(prog(S,P)) --> statement(S),
     [';'],
     prog(P).
+
+statement(statement(S)) --> declaration(S).
+
+statement(statement(S)) --> declAssignment(S).
+
+statement(statement(S)) --> assignment(S).
+
+statement(statement(S)) --> conditional(S).
+
+statement(statement(S)) --> loop(S).
+
+statementSeq(statementSeq(S)) --> statement(S),
+    ['.'].
+
+statementSeq(statementSeq(S,ST)) --> statement(S),
+    [';'],
+    statementSeq(ST).
 
 retStatement(return(B)) --> ['return'],
     base(B).
@@ -118,8 +151,58 @@ declAssignment(declAssignment(ID,B)) --> ['var'],
     ['<-'],
     base(B).
 
+funcCall(funcCall(ID,B)) --> identifier(ID),
+    ['('],
+    base(B),
+    [')'].
+
+conditional(conditional(C,S)) --> ['if'],
+    ['('],
+    condition(C),
+    [')'],
+    ['then'],
+    statementSeq(S),
+    ['endif'].
+
+conditional(conditional(C,S1,S2)) --> ['if'],
+    ['('],
+    condition(C),
+    [')'],
+    ['then'],
+    statementSeq(S1),
+    ['else'],
+    statementSeq(S2),
+    ['endif'].
+
+loop(loop(C,S)) --> ['while'],
+    ['('],
+    condition(C),
+    [')'],
+    ['do'],
+    statementSeq(S),
+    ['done'].
+
+condition(condition(B1,OP,B2)) --> base(B1),
+    comp(OP),
+    base(B2).
+
+condition(condition(C1,OP,C2)) --> condition(C1),
+    logOp(OP),
+    condition(C2).
+
+condition(condition(B)) --> boolean(B).
+
+condition(condition(C)) --> ['!'],
+    ['('],
+    condition(C),
+    [')'].
+
 identifier(identifier(ID)) --> [ID],
     {not(keywords(ID))}.
+
+boolean(boolean(B)) --> ['true'].
+
+boolean(boolean(B)) --> ['false'].
 
 % Evaluation rules
 evaluate(AST, Number):-
@@ -151,62 +234,72 @@ eval(declAssignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number)
     eval(base(B), Var_list_in, R),
     put_assoc(ID, Var_list_in, R, Var_list_out).
 
+%base case for base
 eval(base(B), Var_list_in, Ret):-
     number(B),
-    %eval(B, Var_list_in, Ret).
     Ret is B.
 
+%base case for ID
 eval(base(B), Var_list_in, Ret):-
     not(number(B)),
     eval(B, Var_list_in, Ret).
-    %Ret is B.
 
+%for expression +
 eval(expression(A, addOp('+'),B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
     Ret is RA + RB.
 
+%for expression -
 eval(expression(A, addOp('-'),B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
     Ret is RA - RB.
 
+%for expression base case
 eval(expression(T), Var_list_in, Ret):-
     eval(T, Var_list_in, RT),
     Ret is RT.
 
+%for term base case
 eval(term(F), Var_list_in, Ret):-
     eval(F,Var_list_in,RF),
     Ret is RF.
 
+%for factor base case
 eval(factor(B), Var_list_in, Ret):-
     eval(B, Var_list_in, RB),
     Ret is RB.
 
+%for term /
 eval(term(A, mulOp('/'), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B,Var_list_in, RB),
     Ret is RA/RB.
 
+%for term *
 eval(term(A, mulOp('*'), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B,Var_list_in, RB),
     Ret is RA*RB.
 
+%for eval of ID
 eval(identifier(ID), Var_list_in, Ret):-
     get_assoc(ID, Var_list_in, Val),
     Ret is Val.
 
+%for factor base case
 eval(factor(B), Var_list_in, Var_list_out, Number):-
     eval(B, Var_list_in, Var_list_out, R),
     Number is R.
 
+%for term(factor()) base case
 eval(term(factor(F)), Var_list_in, Var_list_out, Number):-
      eval(F, Var_list_in, Var_list_out, R),
      Number is R.
 
 
-
+%test cases
 %parse(['var', 'x', ';', 'x','<-', '(', 5, '*', 2, ')', ';', 'return', '(', 'x', '+', 1, ')', '.'], AST), evaluate(AST,N).
 % This command evaluates, so if it doesn't work for you, it's your fault
 

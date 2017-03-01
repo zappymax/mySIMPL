@@ -30,6 +30,8 @@ base(base(B)) --> ['('],
 	expression(B),
 	[')'].
 
+base(base(B)) --> funcCall(B).
+
 
 
 % simple case: just a term
@@ -72,6 +74,16 @@ addOp(addOp('-')) --> ['-'].
 mulOp(mulOp('*')) --> ['*'].
 mulOp(mulOp('/')) --> ['/'].
 
+%Booleans and Comps
+logOp(logOp('&&')) --> ['&&'].
+logOp(logOp('||')) --> ['||'].
+comp(comp('==')) --> ['=='].
+comp(comp('<')) --> ['<'].
+comp(comp('>')) --> ['>'].
+comp(comp('<=')) --> ['<='].
+comp(comp('>=')) --> ['>='].
+comp(comp('!=')) --> ['!='].
+
 
 % You need to finish adding the rest of the parsing rules.
 % After that, you need to define evaluation rules that will take an AST and
@@ -87,21 +99,42 @@ keywords(;).
 keywords(var).
 keywords(return).
 
+funcDecl(funcDecl(ID,PAR,PROG)) --> ['function'],
+    identifier(ID),
+    ['('],
+    [PAR],
+    [')'],
+    ['{'],
+    prog(PROG),
+    ['}'].
 
 prog(prog(R)) --> retStatement(R),
     ['.'].
 
-prog(prog(S,P)) --> declaration(S),
-    [';'],
-	prog(P).
-
-prog(prog(S,P)) --> declAssignment(S),
+prog(prog(S,P)) --> funcDecl(S),
     [';'],
     prog(P).
 
-prog(prog(S,P)) --> assignment(S),
+prog(prog(S,P)) --> statement(S),
     [';'],
     prog(P).
+
+statement(statement(S)) --> declaration(S).
+
+statement(statement(S)) --> declAssignment(S).
+
+statement(statement(S)) --> assignment(S).
+
+statement(statement(S)) --> conditional(S).
+
+statement(statement(S)) --> loop(S).
+
+statementSeq(statementSeq(S)) --> statement(S),
+    ['.'].
+
+statementSeq(statementSeq(S,ST)) --> statement(S),
+    [';'],
+    statementSeq(ST).
 
 retStatement(return(B)) --> ['return'],
     base(B).
@@ -118,8 +151,58 @@ declAssignment(declAssignment(ID,B)) --> ['var'],
     ['<-'],
     base(B).
 
+funcCall(funcCall(ID,B)) --> identifier(ID),
+    ['('],
+    base(B),
+    [')'].
+
+conditional(conditional(C,S)) --> ['if'],
+    ['('],
+    condition(C),
+    [')'],
+    ['then'],
+    statementSeq(S),
+    ['endif'].
+
+conditional(conditional(C,S1,S2)) --> ['if'],
+    ['('],
+    condition(C),
+    [')'],
+    ['then'],
+    statementSeq(S1),
+    ['else'],
+    statementSeq(S2),
+    ['endif'].
+
+loop(loop(C,S)) --> ['while'],
+    ['('],
+    condition(C),
+    [')'],
+    ['do'],
+    statementSeq(S),
+    ['done'].
+
+condition(condition(B1,OP,B2)) --> base(B1),
+    comp(OP),
+    base(B2).
+
+condition(condition(C1,OP,C2)) --> condition(C1),
+    logOp(OP),
+    condition(C2).
+
+condition(condition(B)) --> boolean(B).
+
+condition(condition(C)) --> ['!'],
+    ['('],
+    condition(C),
+    [')'].
+
 identifier(identifier(ID)) --> [ID],
     {not(keywords(ID))}.
+
+boolean(boolean(B)) --> ['true'].
+
+boolean(boolean(B)) --> ['false'].
 
 % Evaluation rules
 evaluate(AST, Number):-
