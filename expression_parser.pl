@@ -217,6 +217,12 @@ evaluateProg(prog(S,P), Var_list_in, Var_list_out, Number):-
     eval(S, Var_list_in, Var_list_out, Number),
     evaluateProg(P, Var_list_out, Var_list_temp, Number).
 
+%Eval for statementSeq and statement
+eval(statementSeq(S), Var_list_in, Var_list_out, Number):-
+    eval(S, Var_list_in, Var_list_out, Number).
+
+eval(statement(S), Var_list_in, Var_list_out, Number):-
+    eval(S, Var_list_in, Var_list_out, Number).
 
 %rule for assignment
 eval(assignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number):-
@@ -295,12 +301,57 @@ eval(factor(B), Var_list_in, Var_list_out, Number):-
 
 %for term(factor()) base case
 eval(term(factor(F)), Var_list_in, Var_list_out, Number):-
-     eval(F, Var_list_in, Var_list_out, R),
-     Number is R.
+    eval(F, Var_list_in, Var_list_out, R),
+    Number is R.
+
+%eval conditions
+%NOTE: Conditionals don't currently work in the parser, so it's
+%entirely possible this won't work
+%ALSO: Still not 100% sure how to handle booleans in our evaluation,
+%so we might need to make adjustments.
+eval(condition(A, comp('=='), B), Var_list_in, Ret):-
+    eval(A, Var_list_in, RA),
+    eval(B, Var_list_in, RB),
+    Ret is RA=:=RB.
+
+eval(condition(A, comp('<'), B), Var_list_in, Ret):-
+    eval(A, Var_list_in, RA),
+    eval(B, Var_list_in, RB),
+    Ret is RA<RB.
+
+eval(condition(A, comp('>'), B), Var_list_in, Ret):-
+    eval(A, Var_list_in, RA),
+    eval(B, Var_list_in, RB),
+    Ret is RA>RB.
+
+eval(condition(A, comp('<='), B), Var_list_in, Ret):-
+    eval(A, Var_list_in, RA),
+    eval(B, Var_list_in, RB),
+    Ret is RA<=RB.
+
+eval(condition(A, comp('>='), B), Var_list_in, Ret):-
+    eval(A, Var_list_in, RA),
+    eval(B, Var_list_in, RB),
+    Ret is RA>=RB.
+
+eval(condition(A, comp('!='), B), Var_list_in, Ret):-
+    eval(A, Var_list_in, RA),
+    eval(B, Var_list_in, RB),
+    Ret is (not(RA=:=RB)).
+
+%eval for Booleans
+%haven't figureout exactly how to handle the eval, but for now we're using
+%numbers 1 and 0 for true and false.
+eval(boolean('true'), Var_list_in, Number):- Number is 1.
+
+eval(boolean('false'), Var_list_out, Number):- Number is 0.
 
 
 %test cases
 %parse(['var', 'x', ';', 'x','<-', '(', 5, '*', 2, ')', ';', 'return', '(', 'x', '+', 1, ')', '.'], AST), evaluate(AST,N).
 % This command evaluates, so if it doesn't work for you, it's your fault
-
-
+%parse([function, f, '(', x, ')', '{', return, x, '.', '}', ';', return, f, '(', '(', 10, +, 1, ')',  ')',  '.'],AST), evaluate(AST,N).
+%
+%parse(['var', x, '<-', 1, ';', 'if', '(', x, '<', 0, ')', 'then', x, '<-', 10, '.', 'else', x, '<-', 20, '.', 'endif', ';', return, x, '.'],AST), evaluate(AST,N).
+%
+%parse(['return', 8, '>', 6, '.'], AST), evaluate(AST,N).
