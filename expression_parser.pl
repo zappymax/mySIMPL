@@ -186,9 +186,11 @@ condition(condition(B1,OP,B2)) --> base(B1),
     comp(OP),
     base(B2).
 
-condition(condition(C1,OP,C2)) --> condition(C1),
+condition(condition(C1,OP,C2)) --> ['('],
+    condition(C1),
     logOp(OP),
-    condition(C2).
+    condition(C2),
+    [')'].
 
 condition(condition(B)) --> boolean(B).
 
@@ -327,7 +329,7 @@ eval(condition(A, comp('>'), B), Var_list_in, Ret):-
 eval(condition(A, comp('<='), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    RA<=RB.
+    RA=<RB.
 
 eval(condition(A, comp('>='), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
@@ -354,4 +356,6 @@ eval(boolean('false'), Var_list_out, Number):- Number is 0.
 %
 %parse(['var', x, '<-', 1, ';', 'if', '(', x, '<', 0, ')', 'then', x, '<-', 10, '.', 'else', x, '<-', 20, '.', 'endif', ';', return, x, '.'],AST), evaluate(AST,N).
 %
-%parse(['return', 8, '>', 6, '.'], AST), evaluate(AST,N).
+%parse(['var', 'x', '<-', 1, ';', 'if', '(', 'true', ')', 'then', 'x', '<-', 2, '.', 'endif', ';', 'return', 'x', '.'], AST).
+%
+%parse(['var', 'x', '<-', 1, ';', 'if', '(', 8, '>', 6, ')', 'then', 'x', '<-', 2, '.', 'endif', ';', 'return', 'x', '.'], AST).
