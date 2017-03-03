@@ -312,32 +312,32 @@ eval(term(factor(F)), Var_list_in, Var_list_out, Number):-
 eval(condition(A, comp('=='), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    Ret is RA=:=RB.
+    RA=:=RB.
 
 eval(condition(A, comp('<'), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    Ret is RA<RB.
+    RA<RB.
 
 eval(condition(A, comp('>'), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    Ret is RA>RB.
+    RA>RB.
 
 eval(condition(A, comp('<='), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    Ret is RA<=RB.
+    RA<=RB.
 
 eval(condition(A, comp('>='), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    Ret is RA>=RB.
+    RA>=RB.
 
 eval(condition(A, comp('!='), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    Ret is (not(RA=:=RB)).
+    (not(RA=:=RB)).
 
 %eval for Booleans
 %haven't figureout exactly how to handle the eval, but for now we're using
