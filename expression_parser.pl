@@ -345,6 +345,8 @@ eval(loop(C,S), Var_list_in, Var_list_out, Number):-
 %entirely possible this won't work
 %ALSO: Still not 100% sure how to handle booleans in our evaluation,
 %so we might need to make adjustments.
+%base case
+
 eval(condition(A, comp('=='), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
@@ -380,15 +382,12 @@ eval(condition(A, comp('!='), B), Var_list_in, Ret):-
 eval(condition(A, logOp('&&'), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    RA*RB.
+    RA,RB.
 
 eval(condition(A, logOp('||'), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    RA+RB.
-
-eval(condition(B), Var_list_in, Ret):-
-    eval(B, Var_list_in, Ret).
+    RA;RB.
 
 %eval for Booleans
 %haven't figureout exactly how to handle the eval, but for now we're using
