@@ -239,10 +239,12 @@ eval(assignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number):-
 
 %rule for declaration
 eval(declaration(identifier(ID)), Var_list_in, Var_list_out, Number):-
+    not(get_assoc(ID, Var_list_in, Val)),
     put_assoc(ID, Var_list_in, 'NULL', Var_list_out).
 
 %rule for declaration assignment
 eval(declAssignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number):-
+    not(get_assoc(ID, Var_list_in, Val)),
     eval(base(B), Var_list_in, R),
     put_assoc(ID, Var_list_in, R, Var_list_out).
 
@@ -297,6 +299,7 @@ eval(term(A, mulOp('*'), B), Var_list_in, Ret):-
 
 %for eval of ID
 eval(identifier(ID), Var_list_in, Ret):-
+    %(ID=\='NULL'),
     get_assoc(ID, Var_list_in, Val),
     Ret is Val.
 
@@ -316,6 +319,11 @@ eval(conditional(C,S), Var_list_in, Var_list_out, Number):-
 
 eval(conditional(C,S1,S2), Var_list_in, Var_list_out, Number):-
     (eval(C, Var_list_in, Number) -> eval(S1, Var_list_in, Number) ; eval(S2, Var_list_in, Number)).
+
+%eval for loops
+%still need to account for scoping but this is a very basic loop setup
+eval(loop(C,S), Var_list_in, Var_list_out, Number):-
+    (eval(C, Var_list_in, Number) -> eval(S, Var_list_in, Number), eval(loop(C,S), Var_list_in, Var_list_out, Number)).
 
 
 %eval conditions
