@@ -96,6 +96,9 @@ keywords(*).
 keywords(/).
 keywords(<-).
 keywords(;).
+keywords('.'').
+keywords('(').
+keywords(')').
 keywords(var).
 keywords(return).
 
@@ -200,7 +203,8 @@ condition(condition(C)) --> ['!'],
     [')'].
 
 identifier(identifier(ID)) --> [ID],
-    {not(keywords(ID))}.
+    {not(keywords(ID))},
+    {not(number(ID))}.
 
 boolean(boolean(B)) --> ['true'].
 
@@ -364,6 +368,237 @@ eval(condition(A, logOp('||'), B), Var_list_in, Ret):-
 eval(boolean('true'), Var_list_in, Number):- true.
 
 eval(boolean('false'), Var_list_out, Number):- false.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Simple test running code for the mySIMPL assignments
+%
+% Author: Loc Hoang <loc@cs.utexas.edu>, based on the CS345 test suite 
+% runner for Assignment 2/3
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HOW TO:
+% Paste this code at the end of your Prolog file.
+% Define tests using the do_test interface. See t1, t2, and t3 below.
+% Add the tests you define to the test_list.
+% Upon loading your file in SWI-Prolog, the tests should run. (assuming you
+% copy-pasted this infrastructure to the bottom of your file)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TEST DEFINING RULES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% do_test for parse failures
+do_test(TokenList, p) :-
+    format("Testing ~k, expect parse failure~n", [TokenList]),
+
+    (parse(TokenList, AST) ->
+        format("Exepcted parse failure, got ~k, FAIL~n", [AST]);
+        format("Got parse failure, PASS~n")).
+
+% do_test for eval failures
+do_test(TokenList, e) :-
+    format("Testing ~k, expect evaluate failure~n", [TokenList]),
+
+    (parse(TokenList, AST) ->
+        (evaluate(AST, A) -> 
+            format("Expected evaluate failure, got ~w, FAIL~n", [A]);
+            format("Got evaluate failure, PASS~n"));
+        format("Parse failure, expected eval failure, FAIL~n")).
+
+% do_test for programs that have some expected value
+do_test(TokenList, Expected) :-
+    format("Testing ~k~n", [TokenList]),
+
+    (parse(TokenList, AST) ->
+
+        (evaluate(AST, A) -> 
+            (format("Expected ~w, got ~w, ", [Expected, A]),
+             (Expected =:= A -> writeln('PASS'); writeln('FAIL')));
+            format("Evaluate failure, expected ~w, FAIL~n", [Expected]));
+
+        format("Parse failure, expected ~w, FAIL~n", [Expected])).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TESTS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% define tests as their own rules + by using the do_tests defined above;
+% p for expected parse failure
+% e for expected eval failure
+% Add the expected value return if one is expected
+% return
+t1 :- do_test([return,1,'.'], 1).
+t2 :- do_test([return,1.0,'.'], 1.0).
+
+% parenthesis
+t3 :- do_test([return,'(',1,'.'], p).
+t4 :- do_test([return,1,')','.'], p).
+t5 :- do_test([return,'(',42,')','.'], 42).
+t6 :- do_test([return,'(','(',42,')',')','.'], 42).
+t7 :- do_test([return,'(',42,'(',')',')','.'], p).
+t8 :- do_test([return,'(','(','(','(',42,')',')',')',')','.'], 42).
+
+% arithmetic
+t9 :- do_test([return,'(',1,+,1,')','.'], 2.0).
+t10 :- do_test([return,'(',2,*,2,')','.'], 4.0).
+t11 :- do_test([return,'(',1,+,1,+,1,')','.'], 3.0).
+t12 :- do_test([return,'(',2,*,4,*,6,')','.'], 48.0).
+t13 :- do_test([return,'(',1,-,1,')','.'], 0.0).
+t14 :- do_test([return,'(',2,/,2,')','.'], 1.0).
+t15 :- do_test([return,'(',1,-,1,+,1,')','.'], 1.0).
+t16 :- do_test([return,'(',64,/,2,/,8,')','.'], 4.0).
+t17 :- do_test([return,'(',1,+,'(',1,+,1,')',')','.'], 3.0).
+t18 :- do_test([return,'(',2,*,'(',2,/,2,')',')','.'], 2.0).
+t19 :- do_test([return,'(',4,-,'(',2,-,1,')',')','.'], 3.0).
+t20 :- do_test([return,'(',4,/,'(',2,-,-2,')',')','.'], 1.0).
+t21 :- do_test([return,'(',1,*,'(',3,/,2,')',')','.'], 1.5).
+t22 :- do_test([return,'(',2.5,*,'(',3,/,2,')',')','.'], 3.75).
+t23 :- do_test([return,'(',2.5,+,3.66,')','.'], 6.16).
+t24 :- do_test([return,'(',2.5,-,1.01,')','.'], 1.49).
+t25 :- do_test([return,'(',2.5,-,1.01,+,'(',3,*,1.5,')',')','.'], 5.99).
+t26 :- do_test([return,'(',2,*,9,/,6,')','.'], 3.0).
+t27 :- do_test([return,'(','(','(',1,+,1,+,1,')',')',')','.'], 3.0).
+t28 :- do_test([return,'(','(','(',1,-,1,-,1,')',')',')','.'], -1.0).
+
+% Right Associativity
+t29 :- do_test([return,'(',1,-,1,+,1,+,10,')','.'], 11.0).
+t30 :- do_test([return,'(',10,-,1,+,2,*,10,')','.'], 29.0).
+t31 :- do_test([return,'(',10,-,10,/,2,+,10,')','.'], 15.0).
+t32 :- do_test([return,'(',10,-,10,*,5,-,10,')','.'], -50.0).
+t33 :- do_test([return,'(',10,+,10,-,5,-,10,')','.'], 5.0).
+t34 :- do_test([return,'(',10,+,10,-,5,+,10,')','.'], 25.0).
+t35 :- do_test([return,'(',1,+,10,-,5,+,10,-,11,')','.'], 5.0).
+t36 :- do_test([return,'(',1,+,8,+,5,-,10,+,9,')','.'], 13.0).
+t37 :- do_test([return,'(',10,*,8,/,2,/,10,')','.'], 4.0).
+t38 :- do_test([return,'(',8,*,10,/,2,*,10,')','.'], 400.0).
+t39 :- do_test([return,'(',5,/,10,*,2,*,210,')','.'], 210.0).
+t40 :- do_test([return,'(',3,/,4,*,20,*,2,')','.'], 30.0).
+t41 :- do_test([return,'(',3,/,4,*,8,+,2,')','.'], 8.0).
+t42 :- do_test([return,'(',3,/,4,*,8,-,2,')','.'], 4.0).
+t43 :- do_test([return,'(',3,*,4,/,8,+,1,')','.'], 2.5).
+t44 :- do_test([return,'(',3,*,40,/,4,*,10,+,1,')','.'], 301.0).
+
+% Var
+t45 :- do_test([var,x,;,x,<-,1,;,return,x,'.'], 1).
+t46 :- do_test([return,x,'.'], e).
+t47 :- do_test([var,x,;,return,x,'.'], e).
+t48 :- do_test([x,<-,1,;,return,x,'.'], e).
+t49 :- do_test([x,<-,1,;,return,1,'.'], e).
+t50 :- do_test([var,x,;,var,y,;,x,<-,1,;,y,<-,2,;,return,'(',x,+,y,')','.'], 3.0).
+t51 :- do_test([var,x,;,var,y,;,x,<-,1,;,return,'(',x,+,y,')','.'], e).
+t52 :- do_test([var,x,;,var,y,;,x,<-,'(',1,+,1,+,1,')',;,return,x,'.'], 3.0).
+t53 :- do_test([var,x,;,var,y,;,var,z,;,x,<-,1,;,y,<-,2,;,z,<-,'(',x,+,y,')',;,return,z,'.'], 3.0).
+t54 :- do_test([var,x,;,var,y,;,x,<-,1,;,y,<-,2,;,return,y,'.'], 2).
+t55 :- do_test([var,x,;,var,y,;,x,<-,1,;,x,<-,2,;,return,x,'.'], 2).
+t56 :- do_test([var,x,;,var,y,;,x,<-,1,;,y,<-,1000,;,x,<-,y,;,return,x,'.'], 1000).
+t57 :- do_test([var,x,;,var,y,;,x,<-,1,;,y,<-,1000,;,x,<-,y,;,y,<-,2,;,return,x,'.'], 1000).
+t58 :- do_test([var,x,;,var,y,;,x,<-,a,;,y,<-,1000,;,x,<-,y,;,return,x,'.'], e).
+t59 :- do_test([var,x,;,var,y,;,x,<-,1,;,y,<-,a,;,x,<-,y,;,return,y,'.'], e).
+t60 :- do_test([var,x,;,x,<-,'(','(',2,+,6,+,1,')',+,1,')',;,return,x,'.'], 10.0).
+t61 :- do_test([var,x,;,x,<-,'(','(',2,+,6,+,1,')',*,2,*,2,')',;,return,x,'.'], 36.0).
+t62 :- do_test([var,a,;,var,b,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,b,<-,'(',a,+,b,')',;,return,b,'.'], 15.0).
+t63 :- do_test([var,a,;,var,b,;,a,<-,b,;,b,<-,37,;,return,a,'.'], e).
+t64 :- do_test([var,a,;,var,b,;,b,<-,37,;,a,<-,30,;,return,b,'.'], 37).
+t65 :- do_test([var,b,;,b,<-,37.1245,;,return,b,'.'], 37.1245).
+
+% Declaration Assignment
+t66 :- do_test([var,x,<-,1,;,return,x,'.'], 1).
+t67 :- do_test([var,x,<-,1,;,var,x,;,return,x,'.'], e).
+t68 :- do_test([var,x,<-,1,;,x,<-,100,;,return,x,'.'], 100).
+t69 :- do_test([var,x,<-,1,;,var,x,<-,4,;,return,x,'.'], e).
+t70 :- do_test([var,x,<-,1,;,var,y,;,y,<-,10,;,return,'(',x,+,y,')','.'], 11.0).
+t71 :- do_test([var,x,<-,1,;,var,y,;,y,<-,1000,;,x,<-,y,;,return,x,'.'], 1000).
+t72 :- do_test([var,y,;,y,<-,1000,;,var,x,<-,y,;,return,x,'.'], 1000).
+t73 :- do_test([var,x,<-,a,;,return,10,'.'], e).
+t74 :- do_test([var,x,<-,'(',10,+,5,')',;,return,x,'.'], 15.0).
+t75 :- do_test([var,y,;,y,<-,2,;,var,x,<-,'(',10,+,y,')',;,return,x,'.'], 12.0).
+t76 :- do_test([var,x,<-,x,;,return,10,'.'], e).
+t77 :- do_test([var,x,;,x,<-,2,;,var,x,<-,10,;,return,10,'.'], e).
+t78 :- do_test([var,x,<-,1.12555,;,return,x,'.'], 1.12555).
+
+% Var Assignment
+t79 :- do_test([var,a,;,var,b,;,var,c,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,c,<-,'(',10,+,a,+,b,')',;,return,c,'.'], 25.0).
+t80 :- do_test([var,a,;,var,b,;,var,c,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,c,<-,'(',10,*,a,*,b,')',;,return,c,'.'], 500.0).
+t81 :- do_test([var,a,;,var,b,;,var,c,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,c,<-,'(',10,-,a,-,b,')',;,return,c,'.'], -5.0).
+t82 :- do_test([var,a,;,var,b,;,var,c,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,c,<-,'(',10,-,a,+,b,')',;,return,c,'.'], 15.0).
+t83 :- do_test([var,a,;,var,b,;,var,c,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,c,<-,'(',100,/,a,/,b,')',;,return,c,'.'], 2.0).
+t84 :- do_test([var,a,;,var,b,;,var,c,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,c,<-,'(',100,/,a,*,b,')',;,return,c,'.'], 200.0).
+t85 :- do_test([var,a,;,var,b,;,var,c,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,c,<-,'(',100,+,a,*,b,-,200,')',;,return,c,'.'], -50.0).
+t86 :- do_test([var,a,;,var,b,;,var,c,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,c,<-,'(','(',100,+,a,')',*,b,-,200,')',;,return,c,'.'], 850.0).
+t87 :- do_test([var,a,;,var,b,;,var,c,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,c,<-,'(','(',10,+,a,')',*,'(',b,-,20,')',')',;,return,c,'.'], -150.0).
+t88 :- do_test([var,a,;,var,b,;,var,c,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,c,<-,'(','(',10,+,a,')',+,'(',b,-,20,')',')',;,return,c,'.'], 5.0).
+t89 :- do_test([var,a,;,var,b,;,var,c,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,c,<-,'(','(',10,+,a,')',-,'(',b,-,20,')',')',;,return,c,'.'], 25.0).
+t90 :- do_test([var,a,;,var,b,;,var,c,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,c,<-,'(','(',10,+,a,')',/,'(',b,-,20,')',')',;,return,c,'.'], -1.5).
+t91 :- do_test([var,a,;,var,b,;,var,c,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,c,<-,'(','(',10,*,a,')',/,'(',b,-,15,+,10,')',')',;,return,c,'.'], 10.0).
+t92 :- do_test([var,a,;,var,b,;,var,c,;,a,<-,5,;,b,<-,'(',a,+,5,')',;,c,<-,'(','(',10,*,'(',a,+,1,')',')',/,'(','(',b,-,20,')',/,2,')',')',;,return,c,'.'], -12.0).
+
+% Base
+t93 :- do_test([return,3,+,5,'.'], p).
+t94 :- do_test([var,x,;,x,<-,3,+,5,;,return,10,'.'], p).
+t95 :- do_test([var,x,<-,3,+,5,;,return,10,'.'], p).
+
+% Parse
+t96 :- do_test([var,x,x,<-,'(',3,+,5,')',;,return,10,'.'], p).
+t97 :- do_test([var,x,;,;,x,<-,'(',3,+,5,')',;,return,10,'.'], p).
+t98 :- do_test([var,x,;,x,<-,'(',3,+,5,')',;,return,10], p).
+t99 :- do_test([var,x,;,x,<-,'(',3,+,5,')',;,return,10,'.','.'], p).
+t100 :- do_test([var,x,;,x,<-,'(',3,a,5,')',;,return,10,'.'], p).
+t101 :- do_test([var,x,;,x,<-,'(',3,5,')',;,return,10,'.'], p).
+t102 :- do_test([var,x,;,x,<-,'(',3,+,+,5,')',;,return,10,'.'], p).
+t103 :- do_test([var,x,;,3,;,x,<-,'(',3,+,5,')',;,return,10,'.'], p).
+t104 :- do_test([var,x,'8',x,<-,'(',3,+,5,')',;,return,10,'.'], p).
+
+% Return
+t105 :- do_test([return,'.'], p).
+t106 :- do_test([return,;,return,1,'.'], p).
+t107 :- do_test([return,1,'.',return,1,'.'], p).
+t108 :- do_test([a,<-,1,;], p).
+t109 :- do_test([var,a,;,a,<-,1,;], p).
+t110 :- do_test([var,a,;,a,<-,1,;,return,a,'.',a,<-,0], p).
+t111 :- do_test([var,a,;,a,<-,1,;,return,a,;,a,<-,0,'.'], p).
+
+% Invalid variable names
+t112 :- do_test([var,<-,;,<-,<-,100,;,return,10,'.'], p).
+t113 :- do_test([var,var,;,var,<-,100,;,return,10,'.'], p).
+t114 :- do_test([var,return,;,return,<-,100,;,return,10,'.'], p).
+t115 :- do_test([var,+,;,+,<-,100,;,return,10,'.'], p).
+t116 :- do_test([var,-,;,-,<-,100,;,return,10,'.'], p).
+t117 :- do_test([var,*,;,*,<-,100,;,return,10,'.'], p).
+t118 :- do_test([var,/,;,/,<-,100,;,return,10,'.'], p).
+t119 :- do_test([var,'.',;,'.',<-,100,;,return,10,'.'], p).
+t120 :- do_test([var,;,;,;,<-,100,;,return,10,'.'], p).
+t121 :- do_test([var,'(',;,'(',<-,100,;,return,10,'.'], p).
+t122 :- do_test([var,')',;,')',<-,100,;,return,10,'.'], p).
+t123 :- do_test([var,10,;,10,<-,100,;,return,10,'.'], p).
+t124 :- do_test([var,10.0,;,10.0,<-,100,;,return,10,'.'], p).
+
+% add tests to this list
+test_list([t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20, t21, t22, t23, t24, t25, t26, t27, t28, t29, t30, t31, t32, t33, t34, t35, t36, t37, t38, t39, t40, t41, t42, t43, t44, t45, t46, t47, t48, t49, t50, t51, t52, t53, t54, t55, t56, t57, t58, t59, t60, t61, t62, t63, t64, t65, t66, t67, t68, t69, t70, t71, t72, t73, t74, t75, t76, t77, t78, t79, t80, t81, t82, t83, t84, t85, t86, t87, t88, t89, t90, t91, t92, t93, t94, t95, t96, t97, t98, t99, t100, t101, t102, t103, t104, t105, t106, t107, t108, t109, t110, t111, t112, t113, t114, t115, t116, t117, t118, t119, t120, t121, t122, t123, t124]).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TEST RUNNER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% test runner
+run_tests([]).  % no tests left
+run_tests([Head|Tail]) :-
+    catch(call_with_time_limit(1, Head), _, test_error(Head)),
+    writeln('-----'),
+    run_tests(Tail).
+
+test_error(Head) :- format('Error with test ~w, FAIL~n', [Head]).
+
+% basically a boolean saying to run the tests
+% PLEASE TURN IT OFF FOR TURNIN
+tests_on :- true.
+
+% will run the tests upon loading the file
+:- (tests_on -> (writeln('Going to run tests:'), writeln('----------'),
+                test_list(TestList), run_tests(TestList)), 
+                writeln('----------'), writeln('Done running tests.') ; 
+                true).
 
 
 %test cases
