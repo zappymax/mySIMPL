@@ -96,7 +96,7 @@ keywords(*).
 keywords(/).
 keywords(<-).
 keywords(;).
-keywords('.'').
+keywords('.').
 keywords('(').
 keywords(')').
 keywords(var).
@@ -313,6 +313,9 @@ eval(term(factor(F)), Var_list_in, Var_list_out, Number):-
 %eval for conditionals
 eval(conditional(C,S), Var_list_in, Var_list_out, Number):-
     eval(C, Var_list_in, Number) -> eval(S, Var_list_in, Number).
+
+eval(conditional(C,S1,S2), Var_list_in, Var_list_out, Number):-
+    (eval(C, Var_list_in, Number) -> eval(S1, Var_list_in, Number) ; eval(S2, Var_list_in, Number)).
 
 
 %eval conditions
