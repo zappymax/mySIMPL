@@ -96,7 +96,7 @@ keywords(*).
 keywords(/).
 keywords(<-).
 keywords(;).
-keywords('.').
+keywords(.).
 keywords('(').
 keywords(')').
 keywords(var).
