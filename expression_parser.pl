@@ -306,6 +306,11 @@ eval(term(factor(F)), Var_list_in, Var_list_out, Number):-
     eval(F, Var_list_in, Var_list_out, R),
     Number is R.
 
+%eval for conditionals
+eval(conditional(C,S), Var_list_in, Var_list_out, Number):-
+    eval(C, Var_list_in, Number) -> eval(S, Var_list_in, Number).
+
+
 %eval conditions
 %NOTE: Conditionals don't currently work in the parser, so it's
 %entirely possible this won't work
@@ -339,14 +344,26 @@ eval(condition(A, comp('>='), B), Var_list_in, Ret):-
 eval(condition(A, comp('!='), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    (not(RA=:=RB)).
+    RA=\=RB.
+
+%eval for logOps
+%once again, not sure about the return values
+eval(condition(A, logOp('&&'), B), Var_list_in, Ret):-
+    eval(A, Var_list_in, RA),
+    eval(B, Var_list_in, RB),
+    RA*RB.
+
+eval(condition(A, logOp('||'), B), Var_list_in, Ret):-
+    eval(A, Var_list_in, RA),
+    eval(B, Var_list_in, RB),
+    RA+RB.
 
 %eval for Booleans
 %haven't figureout exactly how to handle the eval, but for now we're using
 %numbers 1 and 0 for true and false.
-eval(boolean('true'), Var_list_in, Number):- Number is 1.
+eval(boolean('true'), Var_list_in, Number):- true.
 
-eval(boolean('false'), Var_list_out, Number):- Number is 0.
+eval(boolean('false'), Var_list_out, Number):- false.
 
 
 %test cases
@@ -359,3 +376,5 @@ eval(boolean('false'), Var_list_out, Number):- Number is 0.
 %parse(['var', 'x', '<-', 1, ';', 'if', '(', 'true', ')', 'then', 'x', '<-', 2, '.', 'endif', ';', 'return', 'x', '.'], AST).
 %
 %parse(['var', 'x', '<-', 1, ';', 'if', '(', 8, '>', 6, ')', 'then', 'x', '<-', 2, '.', 'endif', ';', 'return', 'x', '.'], AST).
+%
+%parse(['var', 'x', '<-', 1, ';', 'while', '(', 'x', '<', '5', ')', 'do', 'x', '<-', '(', 'x', '+', 1, ')', '.', 'done', ';', 'return', 'x', '.'], AST).
