@@ -217,6 +217,8 @@ evaluate(AST, Number):-
 
 evaluateProg(prog(return(R)), Var_list_in, Var_list_out, Number):-
     eval(R, Var_list_in, X),
+    %write('x is equal to'),writeln(X),
+    not(X = 'NULL'),
     Number is X.
 
 evaluateProg(prog(S,P), Var_list_in, Var_list_out, Number):-
@@ -235,6 +237,7 @@ eval(assignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number):-
     %write('ID IS '),writeln(ID),
     %write('BASE IS '),writeln(B),
     eval(base(B), Var_list_in, RB),
+    %get_assoc(ID, Var_list_in, _),
     put_assoc(ID, Var_list_in, RB, Var_list_out).
 
 %rule for declaration
@@ -299,9 +302,7 @@ eval(term(A, mulOp('*'), B), Var_list_in, Ret):-
 
 %for eval of ID
 eval(identifier(ID), Var_list_in, Ret):-
-    %(ID=\='NULL'),
-    get_assoc(ID, Var_list_in, Val),
-    Ret is Val.
+    (get_assoc(ID, Var_list_in, Val) -> Ret = Val; fail).
 
 %for factor base case
 eval(factor(B), Var_list_in, Var_list_out, Number):-
