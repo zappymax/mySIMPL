@@ -219,7 +219,7 @@ evaluateProg(prog(return(R)), Var_list_in, Var_list_out, Number):-
     eval(R, Var_list_in, X),
     %write('x is equal to'),writeln(X),
     not(X = 'NULL'),
-    Number is X.
+    Number = X.
 
 evaluateProg(prog(S,P), Var_list_in, Var_list_out, Number):-
     eval(S, Var_list_in, Var_list_out, Number),
@@ -237,7 +237,8 @@ eval(assignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number):-
     %write('ID IS '),writeln(ID),
     %write('BASE IS '),writeln(B),
     eval(base(B), Var_list_in, RB),
-    %get_assoc(ID, Var_list_in, _),
+    get_assoc(ID, Var_list_in, X),
+    (number(X); X = 'NULL'),
     put_assoc(ID, Var_list_in, RB, Var_list_out).
 
 %rule for declaration
@@ -254,7 +255,7 @@ eval(declAssignment(identifier(ID), base(B)), Var_list_in, Var_list_out, Number)
 %base case for base
 eval(base(B), Var_list_in, Ret):-
     number(B),
-    Ret is B.
+    Ret = B.
 
 %base case for ID
 eval(base(B), Var_list_in, Ret):-
@@ -265,39 +266,47 @@ eval(base(B), Var_list_in, Ret):-
 eval(expression(A, addOp('+'),B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
+    not(RA = 'NULL'),
+    not(RB = 'NULL'),
     Ret is RA + RB.
 
 %for expression -
 eval(expression(A, addOp('-'),B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
+    not(RA = 'NULL'),
+    not(RB = 'NULL'),
     Ret is RA - RB.
 
 %for expression base case
 eval(expression(T), Var_list_in, Ret):-
     eval(T, Var_list_in, RT),
-    Ret is RT.
+    Ret = RT.
 
 %for term base case
 eval(term(F), Var_list_in, Ret):-
     eval(F,Var_list_in,RF),
-    Ret is RF.
+    Ret = RF.
 
 %for factor base case
 eval(factor(B), Var_list_in, Ret):-
     eval(B, Var_list_in, RB),
-    Ret is RB.
+    Ret = RB.
 
 %for term /
 eval(term(A, mulOp('/'), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B,Var_list_in, RB),
+    not(RA = 'NULL'),
+    not(RB = 'NULL'),
     Ret is RA/RB.
 
 %for term *
 eval(term(A, mulOp('*'), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B,Var_list_in, RB),
+    not(RA = 'NULL'),
+    not(RB = 'NULL'),
     Ret is RA*RB.
 
 %for eval of ID
@@ -307,12 +316,12 @@ eval(identifier(ID), Var_list_in, Ret):-
 %for factor base case
 eval(factor(B), Var_list_in, Var_list_out, Number):-
     eval(B, Var_list_in, Var_list_out, R),
-    Number is R.
+    Number = R.
 
 %for term(factor()) base case
 eval(term(factor(F)), Var_list_in, Var_list_out, Number):-
     eval(F, Var_list_in, Var_list_out, R),
-    Number is R.
+    Number = R.
 
 %eval for conditionals
 eval(conditional(C,S), Var_list_in, Var_list_out, Number):-
