@@ -229,6 +229,10 @@ evaluateProg(prog(S,P), Var_list_in, Var_list_out, Number):-
 eval(statementSeq(S), Var_list_in, Var_list_out, Number):-
     eval(S, Var_list_in, Var_list_out, Number).
 
+eval(statementSeq(S,SQ), Var_list_in, Var_list_out, Number):-
+    eval(S, Var_list_in, Var_list_out, Number),
+    eval(SQ, Var_list_in, Var_list_out, Number).
+
 eval(statement(S), Var_list_in, Var_list_out, Number):-
     eval(S, Var_list_in, Var_list_out, Number).
 
@@ -325,10 +329,10 @@ eval(term(factor(F)), Var_list_in, Var_list_out, Number):-
 
 %eval for conditionals
 eval(conditional(C,S), Var_list_in, Var_list_out, Number):-
-    eval(C, Var_list_in, Number) -> eval(S, Var_list_in, Number).
+    eval(C, Var_list_in, Number) -> eval(S, Var_list_in, Var_list_out, Number).
 
 eval(conditional(C,S1,S2), Var_list_in, Var_list_out, Number):-
-    (eval(C, Var_list_in, Number) -> eval(S1, Var_list_in, Number) ; eval(S2, Var_list_in, Number)).
+    (eval(C, Var_list_in, Number) -> eval(S1, Var_list_in, Var_list_out, Number) ; eval(S2, Var_list_in, Var_list_out, Number)).
 
 %eval for loops
 %still need to account for scoping but this is a very basic loop setup
@@ -383,12 +387,16 @@ eval(condition(A, logOp('||'), B), Var_list_in, Ret):-
     eval(B, Var_list_in, RB),
     RA+RB.
 
+eval(condition(B), Var_list_in, Ret):-
+    eval(B, Var_list_in, Ret).
+
 %eval for Booleans
 %haven't figureout exactly how to handle the eval, but for now we're using
 %numbers 1 and 0 for true and false.
 eval(boolean('true'), Var_list_in, Number):- true.
 
-eval(boolean('false'), Var_list_out, Number):- false.
+eval(boolean('false'), Var_list_in, Number):- false.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Simple test running code for the mySIMPL assignments
