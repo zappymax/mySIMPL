@@ -337,7 +337,7 @@ eval(conditional(C,S), Var_list_Glob, Var_list_Glob_out, Var_list_Loc, Var_list_
 
 condHelper(N, S, Var_list_Glob, Var_list_Glob_out, Var_list_Loc, Var_list_out, SCOPE, Ret):-
     (N==1),
-    eval(S, Var_list_Glob, Var_list_Loc, Var_list_out, SCOPE, Ret).
+    eval(S, Var_list_Glob, Var_list_Glob_out, Var_list_Loc, Var_list_out, SCOPE, Ret).
 
 condHelper(N, S, Var_list_Glob, Var_list_Glob_out, Var_list_Loc, Var_list_out, SCOPE, Ret):-
     (N==0),
