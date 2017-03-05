@@ -342,8 +342,8 @@ condHelper(N, S, Var_list_in, Var_list_out, Ret):-
     true.
 
 eval(conditional(C,S1,S2), Var_list_in, Var_list_out, Number):-
-    (eval(C, Var_list_in, Number) 
-    (Number==1) -> eval(S1, Var_list_in, Var_list_out, Number) ; eval(S2, Var_list_in, Var_list_out, Number)).
+    eval(C, Var_list_in, N),
+    condEHelper(N, S1, S2, Var_list_in, Var_list_out, Number).
 
 condEHelper(N, S1, S2, Var_list_in, Var_list_out, Ret):-
     (N==1),
