@@ -699,3 +699,5 @@ tests_on :- true.
 %parse(['var', 'x', '<-', 1, ';', 'if', '(', '(', 'true', '||', 'false', ')', ')', 'then', 'x', '<-', 2, '.', 'endif', ';', 'return', 'x', '.'], AST), evaluate(AST,N).
 %
 %parse(['var', 'x', '<-', 1, ';', 'if', '(', '!', '(', 'false', ')', ')', 'then', 'x', '<-', 2, '.', 'endif', ';', 'return', 'x', '.'], AST), evaluate(AST,N).
+%
+%parse(['var', 'x', '<-', 1, ';', 'if', '(', '(', 'true', '&&', 'true', ')', ')', 'then', 'var', 'y', '<-', 2, '.', 'endif', ';', 'return', 'y', '.'], AST), evaluate(AST,N).
