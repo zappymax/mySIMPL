@@ -339,7 +339,7 @@ condHelper(N, S, Var_list_in, Var_list_out, Ret):-
 
 condHelper(N, S, Var_list_in, Var_list_out, Ret):-
     (N==0),
-    true.
+    eval(Var_list_in, Var_list_out, Ret).
 
 eval(conditional(C,S1,S2), Var_list_in, Var_list_out, Number):-
     eval(C, Var_list_in, N),
@@ -411,6 +411,8 @@ eval(condition(A, logOp('&&'), B), Var_list_in, Ret):-
     andHelper(RA,RB,R),
     Ret = R.
 
+%Prolog boolean suck so we had to unroll the if statement
+%perhaps there is a better way, but whatever
 andHelper(A, B, Ret):-
     A==1,
     B==1,
