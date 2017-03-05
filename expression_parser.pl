@@ -83,6 +83,9 @@ comp(comp('>')) --> ['>'].
 comp(comp('<=')) --> ['<='].
 comp(comp('>=')) --> ['>='].
 comp(comp('!=')) --> ['!='].
+notOp(notOp('!')) --> ['!'].
+bool(bool('true')) --> ['true'].
+bool(bool('false')) --> ['false'].
 
 
 % You need to finish adding the rest of the parsing rules.
@@ -197,7 +200,7 @@ condition(condition(C1,OP,C2)) --> ['('],
 
 condition(condition(B)) --> boolean(B).
 
-condition(condition(C)) --> ['!'],
+condition(condition(OP,C)) --> notOp(OP),
     ['('],
     condition(C),
     [')'].
@@ -206,9 +209,7 @@ identifier(identifier(ID)) --> [ID],
     {not(keywords(ID))},
     {not(number(ID))}.
 
-boolean(boolean(B)) --> ['true'].
-
-boolean(boolean(B)) --> ['false'].
+boolean(boolean(B)) --> bool(B).
 
 % Evaluation rules
 evaluate(AST, Number):-
@@ -329,10 +330,28 @@ eval(term(factor(F)), Var_list_in, Var_list_out, Number):-
 
 %eval for conditionals
 eval(conditional(C,S), Var_list_in, Var_list_out, Number):-
-    eval(C, Var_list_in, Number) -> eval(S, Var_list_in, Var_list_out, Number).
+    eval(C, Var_list_in, N),
+    condHelper(N, S, Var_list_in, Var_list_out, Number).
+
+condHelper(N, S, Var_list_in, Var_list_out, Ret):-
+    (N==1),
+    eval(S, Var_list_in, Var_list_out, Ret).
+
+condHelper(N, S, Var_list_in, Var_list_out, Ret):-
+    (N==0),
+    true.
 
 eval(conditional(C,S1,S2), Var_list_in, Var_list_out, Number):-
-    (eval(C, Var_list_in, Number) -> eval(S1, Var_list_in, Var_list_out, Number) ; eval(S2, Var_list_in, Var_list_out, Number)).
+    (eval(C, Var_list_in, Number) 
+    (Number==1) -> eval(S1, Var_list_in, Var_list_out, Number) ; eval(S2, Var_list_in, Var_list_out, Number)).
+
+condEHelper(N, S1, S2, Var_list_in, Var_list_out, Ret):-
+    (N==1),
+    eval(S1, Var_list_in, Var_list_out, Ret).
+
+condEHelper(N, S1, S2, Var_list_in, Var_list_out, Ret):-
+    (N==0),
+    eval(S2, Var_list_in, Var_list_out, Ret).
 
 %eval for loops
 %still need to account for scoping but this is a very basic loop setup
@@ -350,51 +369,83 @@ eval(loop(C,S), Var_list_in, Var_list_out, Number):-
 eval(condition(A, comp('=='), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    RA=:=RB.
+    ((RA=:=RB) -> Ret=1 ; Ret=0).
 
 eval(condition(A, comp('<'), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    RA<RB.
+    ((RA<RB) -> Ret=1 ; Ret=0).
 
 eval(condition(A, comp('>'), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    RA>RB.
+    ((RA>RB) -> Ret=1 ; Ret=0).
 
 eval(condition(A, comp('<='), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    RA=<RB.
+    ((RA=<RB) -> Ret=1 ; Ret=0).
 
 eval(condition(A, comp('>='), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    RA>=RB.
+    ((RA>=RB) -> Ret=1 ; Ret=0).
 
 eval(condition(A, comp('!='), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    RA=\=RB.
+    ((RA=\=RB) -> Ret=1 ; Ret=0).
+
+eval(condition(B), Var_list_in, Ret):-
+    eval(B, Var_list_in, Ret).
+
+eval(condition(notOp('!'), C), Var_list_in, Ret):-
+    eval(C, Var_list_in, R),
+    ((R=1) -> Ret=0 ; Ret=1).
 
 %eval for logOps
 %once again, not sure about the return values
 eval(condition(A, logOp('&&'), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    RA,RB.
+    andHelper(RA,RB,R),
+    Ret = R.
 
-eval(condition(A, logOp('||'), B), Var_list_in, Ret):-
+andHelper(A, B, Ret):-
+    A==1,
+    B==1,
+    Ret = 1.
+
+andHelper(A, B, Ret):-
+    A==1,
+    B==0,
+    Ret = 0.
+
+andHelper(A, B, Ret):-
+    A==0,
+    B==1,
+    Ret = 0.
+
+andHelper(A, B, Ret):-
+    A==0,
+    B==0,
+    Ret = 0.
+
+
+eval(condition(A,logOp('||'), B), Var_list_in, Ret):-
     eval(A, Var_list_in, RA),
     eval(B, Var_list_in, RB),
-    RA;RB.
+    ((RA=1 ; RB=1) -> Ret=1 ; Ret=0).
 
 %eval for Booleans
 %haven't figureout exactly how to handle the eval, but for now we're using
 %numbers 1 and 0 for true and false.
-eval(boolean('true'), Var_list_in, Number):- true.
+eval(boolean(bool('true')), Var_list_in, Res):-
+    Res = 1.
 
-eval(boolean('false'), Var_list_in, Number):- false.
+eval(boolean(bool('false')), Var_list_in, Res):-
+    Res = 0.
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -643,3 +694,5 @@ tests_on :- true.
 %parse(['var', 'x', '<-', 1, ';', 'while', '(', 'x', '<', '5', ')', 'do', 'x', '<-', '(', 'x', '+', 1, ')', '.', 'done', ';', 'return', 'x', '.'], AST).
 %
 %parse(['var', 'x', '<-', 1, ';', 'if', '(', '(', 'true', '||', 'false', ')', ')', 'then', 'x', '<-', 2, '.', 'endif', ';', 'return', 'x', '.'], AST), evaluate(AST,N).
+%
+%parse(['var', 'x', '<-', 1, ';', 'if', '(', '!', '(', 'false', ')', ')', 'then', 'x', '<-', 2, '.', 'endif', ';', 'return', 'x', '.'], AST), evaluate(AST,N).
