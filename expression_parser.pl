@@ -385,9 +385,9 @@ declScopes(Var_list_Glob, ID, VAL, SCOPE, Var_list_Glout):-
 %eval for loops
 %still need to account for scoping but this is a very basic loop setup
 eval(loop(C,S), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    !, eval(C, Var_list_Glob, SCOPE, Ret),
-    (Ret==1 -> eval(S, Var_list_Glob, Var_list_Glob_out, SCOPE, Number), eval(loop(C,S), Var_list_Glob_out, Var_list_Glob_temp, SCOPE, Number) ; true).
-
+    Var_list_copy = Var_list_Glob,
+    eval(C, Var_list_Glob, SCOPE, Ret),
+    (Ret==1 -> eval(S, Var_list_copy, Var_list_temp_out, SCOPE, Number), eval(loop(C,S), Var_list_temp_out, Var_list_Glob_out, SCOPE, Number); Var_list_Glob_out=Var_list_Glob; true).
 
 %eval conditions
 %NOTE: Conditionals don't currently work in the parser, so it's
