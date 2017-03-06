@@ -362,7 +362,7 @@ condEHelper(N, S1, S2, Var_list_Glob, Var_list_Glob_out, Var_list_Loc, Var_list_
 checkScopes(Var_list_Glob, ID, SCOPE, Ret):-
     NEXTSCOPE is SCOPE-1,
     get_assoc(SCOPE, Var_list_Glob, ScopeAssoc),
-    (get_assoc(ID, ScopeAssoc, R) -> Ret = R ; checkScopes(Var_list_Glob, NEXTSCOPE, Ret).
+    (get_assoc(ID, ScopeAssoc, R) -> Ret = R ; checkScopes(Var_list_Glob, ID, NEXTSCOPE, Ret)).
 
 setScopes(Var_list_Glob, ID, VAL, SCOPE, Var_list_Glout):-
     NEXTSCOPE is SCOPE-1,
