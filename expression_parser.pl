@@ -345,7 +345,7 @@ eval(funcCall(ID, B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out
     last(FuncPack, FuncLogic),
     eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Val),
     FUNCSCOPE is SCOPE+1,
-    declScopes(Var_list_Glob, ID, Val, FUNCSCOPE, Var_list_Glob_out),
+    declScopes(Var_list_Glob, Param, Val, FUNCSCOPE, Var_list_Glob_out),
     eval(FuncLogic, Var_list_Glob_out, Var_list_Glob_temp, Func_list, Func_list_out, FUNCSCOPE, Number).
 
 
