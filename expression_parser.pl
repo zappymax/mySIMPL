@@ -216,34 +216,35 @@ evaluate(AST, Number):-
     empty_assoc(Var_list_Glob),
     empty_assoc(FirstScope),
     put_assoc(0, Var_list_Glob, FirstScope, Var_list_GlobA),
-    evaluateProg(AST, Var_list_GlobA, Var_list_Glob_out, 0, Number).
+    empty_assoc(Func_list),
+    evaluateProg(AST, Var_list_GlobA, Var_list_Glob_out, Func_list, Func_list_out, 0, Number).
 
-evaluateProg(prog(return(R)), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    eval(R, Var_list_Glob, SCOPE, X),
+evaluateProg(prog(return(R)), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
+    eval(R, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, X),
     %write('x is equal to'),writeln(X),
     not(X = 'NULL'),
     Number = X.
 
-evaluateProg(prog(S,P), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
+evaluateProg(prog(S,P), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
     TEMPSCOPE = SCOPE,
-    eval(S, Var_list_Glob, Var_list_Glob_out, SCOPE, Number),
-    evaluateProg(P, Var_list_Glob_out, Var_list_Glob_new, TEMPSCOPE, Number).
+    eval(S, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number),
+    evaluateProg(P, Var_list_Glob_out, Var_list_Glob_new, Func_list_out, Func_list_new, TEMPSCOPE, Number).
 
 %Eval for statementSeq and statement
-eval(statementSeq(S), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    eval(S, Var_list_Glob, Var_list_Glob_out, SCOPE, Number).
+eval(statementSeq(S), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
+    eval(S, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number).
 
-eval(statementSeq(S,SQ), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
+eval(statementSeq(S,SQ), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
     TEMPSCOPE = SCOPE,
-    eval(S, Var_list_Glob, Var_list_Glob_out, SCOPE, Number),
-    eval(SQ, Var_list_Glob_out, Var_list_Glob_new, TEMPSCOPE, Number).
+    eval(S, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number),
+    eval(SQ, Var_list_Glob_out, Var_list_Glob_new, Func_list_out, Func_list_new, TEMPSCOPE, Number).
 
-eval(statement(S), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    eval(S, Var_list_Glob, Var_list_Glob_out, SCOPE, Number).
+eval(statement(S), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
+    eval(S, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number).
 
 %rule for assignment
-eval(assignment(identifier(ID), base(B)), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    eval(base(B), Var_list_Glob, SCOPE, RB),
+eval(assignment(identifier(ID), base(B)), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
+    eval(base(B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RB),
     %TODO::
     %NEED TO FIX checkScopes and then fix this
     %if you don't fix this ur a dumbass lol
@@ -252,117 +253,134 @@ eval(assignment(identifier(ID), base(B)), Var_list_Glob, Var_list_Glob_out, SCOP
     setScopes(Var_list_Glob, ID, RB, SCOPE, Var_list_Glob_out).
 
 %rule for declaration
-eval(declaration(identifier(ID)), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
+eval(declaration(identifier(ID)), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
     declScopes(Var_list_Glob, ID, 'NULL', SCOPE, Var_list_Glob_out).
 
 %rule for declaration assignment
-eval(declAssignment(identifier(ID), base(B)), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    eval(base(B), Var_list_Glob, SCOPE, R),
+eval(declAssignment(identifier(ID), base(B)), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
+    eval(base(B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, R),
     declScopes(Var_list_Glob, ID, R, SCOPE, Var_list_Glob_out).
 
 %base case for base
-eval(base(B), Var_list_Glob, SCOPE, Ret):-
+eval(base(B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
     number(B),
     Ret = B.
 
 %base case for ID
-eval(base(B), Var_list_Glob, SCOPE, Ret):-
+eval(base(B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
     not(number(B)),
-    eval(B, Var_list_Glob, SCOPE, Ret).
+    eval(B, Var_list_Glob, Var_list_Glob, Func_list, Func_list_out, SCOPE, Ret).
 
 %for expression +
-eval(expression(A, addOp('+'),B),Var_list_Glob, SCOPE, Ret):-
-    eval(A, Var_list_Glob, SCOPE, RA),
-    eval(B, Var_list_Glob, SCOPE, RB),
+eval(expression(A, addOp('+'),B),Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(A, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RA),
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RB),
     not(RA = 'NULL'),
     not(RB = 'NULL'),
     Ret is RA + RB.
 
 %for expression -
-eval(expression(A, addOp('-'),B), Var_list_Glob, SCOPE, Ret):-
-    eval(A, Var_list_Glob, SCOPE, RA),
-    eval(B, Var_list_Glob, SCOPE, RB),
+eval(expression(A, addOp('-'),B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(A, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RA),
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RB),
     not(RA = 'NULL'),
     not(RB = 'NULL'),
     Ret is RA - RB.
 
 %for expression base case
-eval(expression(T), Var_list_Glob, SCOPE, Ret):-
-    eval(T, Var_list_Glob, SCOPE, RT),
+eval(expression(T), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(T, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RT),
     Ret = RT.
 
 %for term base case
-eval(term(F), Var_list_Glob, SCOPE, Ret):-
-    eval(F,Var_list_Glob,SCOPE,RF),
+eval(term(F), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(F,Var_list_Glob,Var_list_Glob_out, Func_list, Func_list_out,SCOPE,RF),
     Ret = RF.
 
 %for factor base case
-eval(factor(B), Var_list_Glob, SCOPE, Ret):-
-    eval(B, Var_list_Glob, SCOPE, RB),
+eval(factor(B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RB),
     Ret = RB.
 
 %for term /
-eval(term(A, mulOp('/'), B), Var_list_Glob, SCOPE, Ret):-
-    eval(A, Var_list_Glob, SCOPE, RA),
-    eval(B, Var_list_Glob, SCOPE, RB),
+eval(term(A, mulOp('/'), B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(A, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RA),
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RB),
     not(RA = 'NULL'),
     not(RB = 'NULL'),
     Ret is RA/RB.
 
 %for term *
-eval(term(A, mulOp('*'), B), Var_list_Glob, SCOPE, Ret):-
-    eval(A, Var_list_Glob, SCOPE, RA),
-    eval(B, Var_list_Glob, SCOPE, RB),
+eval(term(A, mulOp('*'), B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(A, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RA),
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RB),
     not(RA = 'NULL'),
     not(RB = 'NULL'),
     Ret is RA*RB.
 
 %for eval of ID
-eval(identifier(ID), Var_list_Glob, SCOPE, Ret):-
+eval(identifier(ID), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
     checkScopes(Var_list_Glob, ID, SCOPE, R),
     Ret = R.
 
 %for factor base case
-eval(factor(B), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    eval(B, Var_list_Glob, SCOPE, R),
+eval(factor(B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, R),
     Number = R.
 
 %for term(factor()) base case
-eval(term(factor(F)), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    eval(F, Var_list_Glob, Var_list_Glob_out, SCOPE, R),
+eval(term(factor(F)), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
+    eval(F, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, R),
     Number = R.
 
+%eval for function declarations
+eval(funcDecl(ID,PAR,PROG), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
+    (not(get_assoc(ID, Func_list, V))),
+    FuncPack = [PAR,PROG],
+    put_assoc(ID, Func_list, FuncPack, Func_list_out).
+
+eval(funcCall(ID, B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
+    get_assoc(ID, Func_list, FuncPack),
+    [Param|_] = FuncPack,
+    last(FuncPack, FuncLogic),
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Val),
+    FUNCSCOPE is SCOPE+1,
+    declScopes(Var_list_Glob, ID, Val, FUNCSCOPE, Var_list_Glob_out),
+    eval(FuncLogic, Var_list_Glob_out, Var_list_Glob_temp, Func_list, Func_list_out, FUNCSCOPE, Number).
+
+
 %eval for conditionals
-eval(conditional(C,S), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    eval(C, Var_list_Glob, SCOPE, N),
+eval(conditional(C,S), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
+    eval(C, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, N),
     NEWSCOPE is SCOPE+1,
     empty_assoc(NewScopeList),
     put_assoc(NEWSCOPE, Var_list_Glob, NewScopeList, Var_list_Glob_temp),
-    condHelper(N, S, Var_list_Glob_temp, Var_list_Glob_out, NEWSCOPE, Number).
+    condHelper(N, S, Var_list_Glob_temp, Var_list_Glob_out, Func_list, Func_list_out, NEWSCOPE, Number).
 
-condHelper(N, S, Var_list_Glob, Var_list_Glob_out, SCOPE, Ret):-
+condHelper(N, S, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
     (N==1),
-    eval(S, Var_list_Glob, Var_list_Glob_out, SCOPE, Ret).
+    eval(S, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret).
 
-condHelper(N, S, Var_list_Glob, Var_list_Glob_out, SCOPE, Ret):-
+condHelper(N, S, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
     (N==0),
     Var_list_Glob_out = Var_list_Glob,
+    Func_list_out = Func_list,
     true.
 
-eval(conditional(C,S1,S2), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    eval(C, Var_list_Glob, Var_list_Loc, SCOPE, N),
+eval(conditional(C,S1,S2), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
+    eval(C, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, N),
     NEWSCOPE is SCOPE+1,
     empty_assoc(NewScopeList),
     put_assoc(NEWSCOPE, Var_list_Glob, NewScopeList, Var_list_Glob_temp),
-    condEHelper(N, S1, S2, Var_list_Glob_temp, Var_list_Glob_out, NEWSCOPE, Number).
+    condEHelper(N, S1, S2, Var_list_Glob_temp, Var_list_Glob_out, Func_list, Func_list_out, NEWSCOPE, Number).
 
-condEHelper(N, S1, S2, Var_list_Glob, Var_list_Glob_out, SCOPE, Ret):-
+condEHelper(N, S1, S2, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
     (N==1),
-    eval(S1, Var_list_Glob, Var_list_Glob_out, SCOPE, Ret).
+    eval(S1, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret).
 
-condEHelper(N, S1, S2, Var_list_Glob, Var_list_Glob_out, SCOPE, Ret):-
+condEHelper(N, S1, S2, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
     (N==0),
-    eval(S2, Var_list_Glob, Var_list_Glob_out, SCOPE, Ret).
+    eval(S2, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret).
 
 %For checking, getting, and setting the assoc list of scopes for a variable
 checkScopes(Var_list_Glob, ID, SCOPE, Ret):-
@@ -384,9 +402,9 @@ declScopes(Var_list_Glob, ID, VAL, SCOPE, Var_list_Glout):-
 
 %eval for loops
 %still need to account for scoping but this is a very basic loop setup
-eval(loop(C,S), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    !, eval(C, Var_list_Glob, SCOPE, Ret),
-    (Ret==1 -> eval(S, Var_list_Glob, Var_list_Glob_out, SCOPE, Number), eval(loop(C,S), Var_list_Glob_out, Var_list_Glob_temp, SCOPE, Number) ; true).
+eval(loop(C,S), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
+    eval(C, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret),
+    (Ret==1 -> eval(S, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number), eval(loop(C,S), Var_list_Glob_out, Var_list_Glob_temp, Func_list_out, Func_list_temp, SCOPE, Number), Var_list_Glob_out = Var_list_Glob_temp, Func_list_out = Func_list_temp ; true).
 
 
 %eval conditions
@@ -396,48 +414,48 @@ eval(loop(C,S), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
 %so we might need to make adjustments.
 %base case
 
-eval(condition(A, comp('=='), B), Var_list_Glob, SCOPE, Ret):-
-    eval(A, Var_list_Glob, SCOPE, RA),
-    eval(B, Var_list_Glob, SCOPE, RB),
+eval(condition(A, comp('=='), B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(A, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RA),
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RB),
     ((RA=:=RB) -> Ret=1 ; Ret=0).
 
-eval(condition(A, comp('<'), B), Var_list_Glob, SCOPE, Ret):-
-    eval(A, Var_list_Glob, SCOPE, RA),
-    eval(B, Var_list_Glob, SCOPE, RB),
+eval(condition(A, comp('<'), B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(A, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RA),
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RB),
     ((RA<RB) -> Ret=1 ; Ret=0).
 
-eval(condition(A, comp('>'), B), Var_list_Glob, SCOPE, Ret):-
-    eval(A, Var_list_Glob, SCOPE, RA),
-    eval(B, Var_list_Glob, SCOPE, RB),
+eval(condition(A, comp('>'), B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(A, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RA),
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RB),
     ((RA>RB) -> Ret=1 ; Ret=0).
 
-eval(condition(A, comp('<='), B), Var_list_Glob, SCOPE, Ret):-
-    eval(A, Var_list_Glob, SCOPE, RA),
-    eval(B, Var_list_Glob, SCOPE, RB),
+eval(condition(A, comp('<='), B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(A, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RA),
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RB),
     ((RA=<RB) -> Ret=1 ; Ret=0).
 
-eval(condition(A, comp('>='), B), Var_list_Glob, SCOPE, Ret):-
-    eval(A, Var_list_Glob, SCOPE, RA),
-    eval(B, Var_list_Glob, SCOPE, RB),
+eval(condition(A, comp('>='), B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(A, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RA),
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RB),
     ((RA>=RB) -> Ret=1 ; Ret=0).
 
-eval(condition(A, comp('!='), B), Var_list_Glob, SCOPE, Ret):-
-    eval(A, Var_list_Glob, SCOPE, RA),
-    eval(B, Var_list_Glob, SCOPE, RB),
+eval(condition(A, comp('!='), B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(A, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RA),
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RB),
     ((RA=\=RB) -> Ret=1 ; Ret=0).
 
-eval(condition(B), Var_list_Glob, SCOPE, Ret):-
-    eval(B, Var_list_Glob, SCOPE, Ret).
+eval(condition(B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret).
 
-eval(condition(notOp('!'), C), Var_list_Glob, SCOPE, Ret):-
-    eval(C, Var_list_Glob, SCOPE, R),
+eval(condition(notOp('!'), C), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(C, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, R),
     ((R=1) -> Ret=0 ; Ret=1).
 
 %eval for logOps
 %once again, not sure about the return values
-eval(condition(A, logOp('&&'), B), Var_list_Glob, SCOPE, Ret):-
-    eval(A, Var_list_Glob, SCOPE, RA),
-    eval(B, Var_list_Glob, SCOPE, RB),
+eval(condition(A, logOp('&&'), B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(A, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RA),
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RB),
     andHelper(RA,RB,R),
     Ret = R.
 
@@ -464,20 +482,41 @@ andHelper(A, B, Ret):-
     Ret = 0.
 
 
-eval(condition(A,logOp('||'), B), Var_list_Glob, SCOPE, Ret):-
-    eval(A, Var_list_Glob, SCOPE, RA),
-    eval(B, Var_list_Glob, SCOPE, RB),
-    ((RA=1 ; RB=1) -> Ret=1 ; Ret=0).
+eval(condition(A,logOp('||'), B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Ret):-
+    eval(A, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RA),
+    eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, RB),
+    orHelper(RA,RB,R),
+    Ret = R.
+
+orHelper(A, B, Ret):-
+    A==1,
+    B==1,
+    Ret = 1.
+
+orHelper(A, B, Ret):-
+    A==1,
+    B==0,
+    Ret = 1.
+
+orHelper(A, B, Ret):-
+    A==0,
+    B==1,
+    Ret = 1.
+
+orHelper(A, B, Ret):-
+    A==0,
+    B==0,
+    Ret = 0.
 
 
 
 %eval for Booleans
 %haven't figureout exactly how to handle the eval, but for now we're using
 %numbers 1 and 0 for true and false.
-eval(boolean(bool('true')), Var_list_Glob, SCOPE, Res):-
+eval(boolean(bool('true')), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Res):-
     Res = 1.
 
-eval(boolean(bool('false')), Var_list_Glob, SCOPE, Res):-
+eval(boolean(bool('false')), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Res):-
     Res = 0.
 
 
