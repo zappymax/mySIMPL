@@ -337,7 +337,8 @@ eval(term(factor(F)), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out
 eval(funcDecl(ID,PAR,PROG), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
     (not(get_assoc(ID, Func_list, V))),
     FuncPack = [PAR,PROG],
-    put_assoc(ID, Func_list, FuncPack, Func_list_out).
+    put_assoc(ID, Func_list, FuncPack, Func_list_out),
+    Var_list_Glob_out = Var_list_Glob.      
 
 eval(funcCall(ID, B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Number):-
     get_assoc(ID, Func_list, FuncPack),
@@ -345,7 +346,9 @@ eval(funcCall(ID, B), Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out
     last(FuncPack, FuncLogic),
     eval(B, Var_list_Glob, Var_list_Glob_out, Func_list, Func_list_out, SCOPE, Val),
     FUNCSCOPE is SCOPE+1,
-    declScopes(Var_list_Glob, Param, Val, FUNCSCOPE, Var_list_Glob_out),
+    empty_assoc(NewScopeList),
+    put_assoc(FUNCSCOPE, Var_list_Glob, NewScopeList, Var_list_Glob_temp),
+    declScopes(Var_list_Glob_temp, Param, Val, FUNCSCOPE, Var_list_Glob_out),
     eval(FuncLogic, Var_list_Glob_out, Var_list_Glob_temp, Func_list, Func_list_out, FUNCSCOPE, Number).
 
 
