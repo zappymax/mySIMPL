@@ -385,7 +385,8 @@ declScopes(Var_list_Glob, ID, VAL, SCOPE, Var_list_Glout):-
 %eval for loops
 %still need to account for scoping but this is a very basic loop setup
 eval(loop(C,S), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    (eval(C, Var_list_Glob, Number) -> eval(S, Var_list_Glob, Number), eval(loop(C,S), Var_list_Glob, Var_list_Glob_out, Number)).
+    !, eval(C, Var_list_Glob, SCOPE, Ret),
+    (Ret==1 -> eval(S, Var_list_Glob, Var_list_Glob_out, SCOPE, Number), eval(loop(C,S), Var_list_Glob_out, Var_list_Glob_temp, SCOPE, Number) ; true).
 
 
 %eval conditions
@@ -691,7 +692,7 @@ t125 :- do_test([var, x, ;, x,<-, '(', 5, *, 2, ')', ;, return, '(', x, +, 1, ')
 t126 :- do_test(['var', 'x', '<-', 1, ';', 'if', '(', 'true', ')', 'then', 'x', '<-', 2, '.', 'endif', ';', 'return', 'x', '.'],2).
 t127 :- do_test(['var', 'x', '<-', 1, ';', 'if', '(', 8, '>', 6, ')', 'then', 'x', '<-', 2, '.', 'endif', ';', 'return', 'x', '.'],2).
 t128 :- do_test([function, f, '(', x, ')', '{', return, x, '.', '}', ';', return, f, '(', '(', 10, +, 1, ')',  ')',  '.'],11).
-t129 :- do_test(['var', 'x', '<-', 1, ';', 'while', '(', 'x', '<', '5', ')', 'do', 'x', '<-', '(', 'x', '+', 1, ')', '.', 'done', ';', 'return', 'x', '.'],5).
+t129 :- do_test(['var', 'x', '<-', 1, ';', 'while', '(', 'x', '<', 5, ')', 'do', 'x', '<-', '(', 'x', '+', 1, ')', '.', 'done', ';', 'return', 'x', '.'],5).
 t130 :- do_test(['var', 'x', '<-', 1, ';', 'if', '(', '(', 'true', '||', 'false', ')', ')', 'then', 'x', '<-', 2, '.', 'endif', ';', 'return', 'x', '.'], 2).
 t131 :- do_test(['var', 'x', '<-', 1, ';', 'if', '(', '!', '(', 'false', ')', ')', 'then', 'x', '<-', 2, '.', 'endif', ';', 'return', 'x', '.'],2).
 t132 :- do_test(['var', 'x', '<-', 1, ';', 'if', '(', '(', 'true', '&&', 'true', ')', ')', 'then', 'var', 'x', '<-', 2, '.', 'endif', ';', 'return', 'x', '.'],1).
