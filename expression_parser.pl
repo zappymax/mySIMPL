@@ -346,7 +346,7 @@ condHelper(N, S, Var_list_Glob, Var_list_Glob_out, SCOPE, Ret):-
 
 condHelper(N, S, Var_list_Glob, Var_list_Glob_out, SCOPE, Ret):-
     (N==0),
-    Var_list_out = Var_list_Loc,
+    Var_list_Glob_out = Var_list_Glob,
     true.
 
 eval(conditional(C,S1,S2), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
