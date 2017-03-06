@@ -104,6 +104,13 @@ keywords('(').
 keywords(')').
 keywords(var).
 keywords(return).
+keywords(while).
+keywords(function).
+keywords(if).
+keywords(then).
+keywords(else).
+keywords(true).
+keywords(false).
 
 funcDecl(funcDecl(ID,PAR,PROG)) --> ['function'],
     identifier(ID),
