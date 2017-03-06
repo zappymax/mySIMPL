@@ -215,11 +215,11 @@ boolean(boolean(B)) --> bool(B).
 evaluate(AST, Number):-
     empty_assoc(Var_list_Glob),
     empty_assoc(FirstScope),
-    put_assoc(0, Var_list_Glob, FirstScope, Var_list_GlobA)
+    put_assoc(0, Var_list_Glob, FirstScope, Var_list_GlobA),
     evaluateProg(AST, Var_list_GlobA, Var_list_Glob_out, 0, Number).
 
 evaluateProg(prog(return(R)), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    eval(R, Var_list_Glob, Var_list_Glob_out, SCOPE, X),
+    eval(R, Var_list_Glob, SCOPE, X),
     %write('x is equal to'),writeln(X),
     not(X = 'NULL'),
     Number = X.
@@ -253,16 +253,12 @@ eval(assignment(identifier(ID), base(B)), Var_list_Glob, Var_list_Glob_out, SCOP
 
 %rule for declaration
 eval(declaration(identifier(ID)), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    get_assoc(SCOPE, Var_list_Glob, AssocS),
-    (not(get_assoc(ID, AssocS, Val))),
-    setScopes(Var_list_Glob, ID, 'NULL', SCOPE, Var_list_Glob_out).
+    declScopes(Var_list_Glob, ID, 'NULL', SCOPE, Var_list_Glob_out).
 
 %rule for declaration assignment
 eval(declAssignment(identifier(ID), base(B)), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
-    get_assoc(SCOPE, Var_list_Glob, AssocS),
-    (not(get_assoc(ID, AssocS, Val))),
-    eval(base(B), Var_list_Glob, Var_list_Loc, SCOPE, R),
-    setScopes(Var_list_Glob, ID, R, SCOPE, Var_list_Glob_out).
+    eval(base(B), Var_list_Glob, SCOPE, R),
+    declScopes(Var_list_Glob, ID, R, SCOPE, Var_list_Glob_out).
 
 %base case for base
 eval(base(B), Var_list_Glob, SCOPE, Ret):-
@@ -377,7 +373,13 @@ checkScopes(Var_list_Glob, ID, SCOPE, Ret):-
 setScopes(Var_list_Glob, ID, VAL, SCOPE, Var_list_Glout):-
     NEXTSCOPE is SCOPE-1,
     get_assoc(SCOPE, Var_list_Glob, ScopeAssoc),
-    (put_assoc(ID, ScopeAssoc, VAL, R) -> Var_list_Glout = R ; setScopes(Var_list_Glob, ID, VAL, Var_list_Glout)).
+    (get_assoc(ID, ScopeAssoc, R) -> put_assoc(ID, ScopeAssoc, VAL, ScopeAssocT), put_assoc(SCOPE, Var_list_Glob, ScopeAssocT, Var_list_Glout) ; setScopes(Var_list_Glob, ID, VAL, NEXTSCOPE, Var_list_Glout)).
+
+declScopes(Var_list_Glob, ID, VAL, SCOPE, Var_list_Glout):-
+    get_assoc(SCOPE, Var_list_Glob, ScopeAssoc),
+    (not(get_assoc(ID, ScopeAssoc, R))),
+    put_assoc(ID, ScopeAssoc, VAL, ScopeAssocT),
+    put_assoc(SCOPE, Var_list_Glob, ScopeAssocT, Var_list_Glout).
 
 
 %eval for loops
@@ -462,8 +464,8 @@ andHelper(A, B, Ret):-
 
 
 eval(condition(A,logOp('||'), B), Var_list_Glob, SCOPE, Ret):-
-    eval(A, Var_list_Glob, RA),
-    eval(B, Var_list_Glob, RB),
+    eval(A, Var_list_Glob, SCOPE, RA),
+    eval(B, Var_list_Glob, SCOPE, RB),
     ((RA=1 ; RB=1) -> Ret=1 ; Ret=0).
 
 
