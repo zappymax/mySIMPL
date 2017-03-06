@@ -337,8 +337,8 @@ eval(conditional(C,S), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
     eval(C, Var_list_Glob, SCOPE, N),
     NEWSCOPE is SCOPE+1,
     empty_assoc(NewScopeList),
-    put_assoc(NEWSCOPE, Var_list_Glob, NewScopeList, Var_list_Glob_out),
-    condHelper(N, S, Var_list_Glob_out, Var_list_Glob_temp, NEWSCOPE, Number).
+    put_assoc(NEWSCOPE, Var_list_Glob, NewScopeList, Var_list_Glob_temp),
+    condHelper(N, S, Var_list_Glob_temp, Var_list_Glob_out, NEWSCOPE, Number).
 
 condHelper(N, S, Var_list_Glob, Var_list_Glob_out, SCOPE, Ret):-
     (N==1),
@@ -353,8 +353,8 @@ eval(conditional(C,S1,S2), Var_list_Glob, Var_list_Glob_out, SCOPE, Number):-
     eval(C, Var_list_Glob, Var_list_Loc, SCOPE, N),
     NEWSCOPE is SCOPE+1,
     empty_assoc(NewScopeList),
-    put_assoc(NEWSCOPE, Var_list_Glob, NewScopeList, Var_list_Glob_out),
-    condEHelper(N, S1, S2, Var_list_Glob_out, Var_list_Glob_temp, NEWSCOPE, Number).
+    put_assoc(NEWSCOPE, Var_list_Glob, NewScopeList, Var_list_Glob_temp),
+    condEHelper(N, S1, S2, Var_list_Glob_temp, Var_list_Glob_out, NEWSCOPE, Number).
 
 condEHelper(N, S1, S2, Var_list_Glob, Var_list_Glob_out, SCOPE, Ret):-
     (N==1),
