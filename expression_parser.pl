@@ -768,7 +768,7 @@ test_error(Head) :- format('Error with test ~w, FAIL~n', [Head]).
 
 % basically a boolean saying to run the tests
 % PLEASE TURN IT OFF FOR TURNIN
-tests_on :- true.
+tests_on :- false.
 
 % will run the tests upon loading the file
 :- (tests_on -> (writeln('Going to run tests:'), writeln('----------'),
